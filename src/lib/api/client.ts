@@ -1,7 +1,20 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ApiResponse } from '@/types';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
+export const API_REFRESH_URL = import.meta.env.VITE_API_REFRESH_URL;
+
+if (!API_BASE_URL) {
+  throw new Error(
+    'Missing required environment variable: VITE_API_URL. Please define VITE_API_URL in your environment configuration.'
+  );
+}
+
+if (!API_REFRESH_URL) {
+  throw new Error(
+    'Missing required environment variable: VITE_API_REFRESH_URL. Please define VITE_API_REFRESH_URL in your environment configuration.'
+  );
+}
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -72,7 +85,7 @@ apiClient.interceptors.response.use(
       try {
         const storedRefreshToken = localStorage.getItem('atelier_refresh_token');
         const refreshResponse = await axios.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
-          `${API_BASE_URL}/admin/auth/refresh`,
+          API_REFRESH_URL,
           storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
           { withCredentials: true }
         );

@@ -13,8 +13,8 @@ export const Login: React.FC = () => {
   const { login } = useAuth();
   const toast = useToast();
 
-  const [email, setEmail] = useState('admin@ateliervalenti.com');
-  const [password, setPassword] = useState('AtelierValenti2026!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 

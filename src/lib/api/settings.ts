@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { apiClient } from './client';
+import { apiClient, API_BASE_URL } from './client';
 import { ApiResponse, SiteSetting, MegaMenuPayload, SystemHealth } from '@/types';
 
 export const settingsApi = {
@@ -30,7 +30,7 @@ export const settingsApi = {
 
   getHealth: async (): Promise<SystemHealth> => {
     // Health is served at /api/health directly
-    const origin = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/api\/v1\/?$/, '');
+    const origin = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
     const res = await axios.get<ApiResponse<SystemHealth>>(`${origin}/api/health`, { timeout: 4000 });
     return res.data.data;
   },
