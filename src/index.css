@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-serif: 'Cinzel', Georgia, serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Light Theme Tokens - Warm Italian Alabaster & Tuscan Leather */
+    --color-bg: #f7f6f2;
+    --color-surface: #ffffff;
+    --color-surface-hover: #f3f1ec;
+    --color-surface-subtle: #eae7df;
+    --color-card: #ffffff;
+    --color-card-border: #e3dec3;
+    --color-border: #e6e2d8;
+    --color-border-subtle: #eeece5;
+    
+    --color-text-primary: #191614;
+    --color-text-secondary: #5f5a54;
+    --color-text-muted: #8b857d;
+    --color-text-subtle: #aba59c;
+
+    --color-gold: #b38b41;
+    --color-gold-hover: #9c7733;
+    --color-gold-subtle: #faf5ea;
+    --color-gold-border: #dfc99b;
+
+    --color-leather: #523725;
+    --color-leather-light: #7c583f;
+    --color-leather-subtle: #f6efe9;
+
+    --color-success: #15803d;
+    --color-success-bg: #f0fdf4;
+    --color-warning: #b45309;
+    --color-warning-bg: #fffbeb;
+    --color-danger: #b91c1c;
+    --color-danger-bg: #fef2f2;
+    --color-info: #0369a1;
+    --color-info-bg: #f0f9ff;
+  }
+
+  .dark {
+    /* Dark Theme Tokens - Obsidian, Carbon & Polished Tuscan Brass */
+    --color-bg: #0d0e10;
+    --color-surface: #141619;
+    --color-surface-hover: #1b1e22;
+    --color-surface-subtle: #23272d;
+    --color-card: #141619;
+    --color-card-border: #262a30;
+    --color-border: #23272d;
+    --color-border-subtle: #1c1f24;
+
+    --color-text-primary: #f5f4f0;
+    --color-text-secondary: #a8a59f;
+    --color-text-muted: #75726c;
+    --color-text-subtle: #4e4b46;
+
+    --color-gold: #d4af37;
+    --color-gold-hover: #e5c258;
+    --color-gold-subtle: rgba(212, 175, 55, 0.08);
+    --color-gold-border: rgba(212, 175, 55, 0.25);
+
+    --color-leather: #c99365;
+    --color-leather-light: #dfad82;
+    --color-leather-subtle: rgba(201, 147, 101, 0.1);
+
+    --color-success: #22c55e;
+    --color-success-bg: rgba(34, 197, 94, 0.1);
+    --color-warning: #f59e0b;
+    --color-warning-bg: rgba(245, 158, 11, 0.1);
+    --color-danger: #ef4444;
+    --color-danger-bg: rgba(239, 68, 68, 0.1);
+    --color-info: #38bdf8;
+    --color-info-bg: rgba(56, 189, 248, 0.1);
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+/* Custom Utilities */
+.bg-app { background-color: var(--color-bg); }
+.bg-surface { background-color: var(--color-surface); }
+.bg-surface-hover:hover { background-color: var(--color-surface-hover); }
+.bg-surface-subtle { background-color: var(--color-surface-subtle); }
+.bg-card { background-color: var(--color-card); }
+
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-muted { color: var(--color-text-muted); }
+.text-subtle { color: var(--color-text-subtle); }
+.text-gold { color: var(--color-gold); }
+
+.border-theme { border-color: var(--color-border); }
+.border-theme-subtle { border-color: var(--color-border-subtle); }
+.border-gold { border-color: var(--color-gold-border); }
+
+.font-serif-luxury { font-family: var(--font-serif); }
+.font-mono-code { font-family: var(--font-mono); }
+
+/* Glass & Card Effects */
+.card-luxury {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+.dark .card-luxury {
+  box-shadow: 0 4px 25px -2px rgba(0, 0, 0, 0.45);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
