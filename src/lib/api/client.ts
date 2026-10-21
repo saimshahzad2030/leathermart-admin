@@ -1,18 +1,18 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ApiResponse } from '@/types';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL;
-export const API_REFRESH_URL = import.meta.env.VITE_API_REFRESH_URL;
+export const API_BASE_URL = import.meta.env.API_URL;
+export const API_REFRESH_URL = import.meta.env.API_REFRESH_URL;
 
 if (!API_BASE_URL) {
   throw new Error(
-    'Missing required environment variable: VITE_API_URL. Please define VITE_API_URL in your environment configuration.'
+    'Missing required environment variable: API_URL. Please define API_URL in your environment configuration.'
   );
 }
 
 if (!API_REFRESH_URL) {
   throw new Error(
-    'Missing required environment variable: VITE_API_REFRESH_URL. Please define VITE_API_REFRESH_URL in your environment configuration.'
+    'Missing required environment variable: API_REFRESH_URL. Please define API_REFRESH_URL in your environment configuration.'
   );
 }
 
