@@ -42,6 +42,59 @@ export interface AuthSession {
 }
 
 // Product Catalogue Models
+// Reusable Sizing
+export interface ProductSize {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  productCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Reusable Colors
+export interface ProductColor {
+  id: string;
+  name: string;
+  slug: string;
+  hex: string;
+  sortOrder: number;
+  isActive: boolean;
+  productCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Reusable Policies
+export interface ProductPolicy {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  bulletPoints?: string[];
+  sortOrder: number;
+  isActive: boolean;
+  productCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Regional Product Pricing
+export interface ProductRegionalPrice {
+  id?: string;
+  productId?: string;
+  regionCode: 'GLOBAL' | 'PK' | 'IT';
+  currency: 'EUR' | 'PKR';
+  price: number;
+  salePrice?: number | null;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ProductImage {
   id?: string;
   url: string;
@@ -58,7 +111,8 @@ export interface ProductVariant {
   size: string;
   color: string;
   colorHex?: string;
-  stock: number;
+  inStock: boolean;
+  stock?: number;
   priceOverride?: number | null;
 }
 
@@ -112,6 +166,27 @@ export interface Product {
   variants: ProductVariant[];
   availableColors?: { name: string; hex: string }[];
   availableSizes?: string[];
+  isInStock?: boolean;
+  inStock?: boolean;
+  sizes?: ProductSize[];
+  colors?: ProductColor[];
+  policies?: ProductPolicy[];
+  currency?: 'EUR' | 'PKR';
+  currencySymbol?: string;
+  regionalPrices?: ProductRegionalPrice[];
+  resolvedPrice?: {
+    market?: 'GLOBAL' | 'PK' | 'IT';
+    regionCode?: 'GLOBAL' | 'PK' | 'IT';
+    currency: 'EUR' | 'PKR';
+    currencySymbol?: string;
+    symbol?: string;
+    price: number;
+    salePrice: number | null;
+    isDiscounted?: boolean;
+    isSale?: boolean;
+    formattedPrice: string;
+    formattedSalePrice: string | null;
+  };
   rating?: number;
   reviewCount?: number;
   reviews?: ProductReview[];
@@ -366,4 +441,29 @@ export interface SystemHealth {
   orm: string;
   databaseType: string;
   environment: string;
+}
+
+// Contact Us Inquiries
+export type ContactMessageStatus = 'new' | 'in_progress' | 'resolved' | 'spam';
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  status: ContactMessageStatus;
+  adminNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContactQueryParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
 }

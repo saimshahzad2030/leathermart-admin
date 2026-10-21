@@ -11,6 +11,7 @@ import { Select } from '@/components/forms/Select';
 import { CommissionDetailModal } from './CommissionDetailModal';
 import { useToast } from '@/context/ToastContext';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { parseApiError } from '@/lib/apiErrors';
 import {
   Search,
   FileText,
@@ -53,7 +54,7 @@ export const CommissionList: React.FC = () => {
       setActiveDossier(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to update commission status.');
+      toast.error(parseApiError(err, 'Failed to update commission status.').message);
     },
   });
 
@@ -68,7 +69,7 @@ export const CommissionList: React.FC = () => {
       setSelectedIds([]);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to advance bulk status.');
+      toast.error(parseApiError(err, 'Failed to advance bulk status.').message);
     },
   });
 

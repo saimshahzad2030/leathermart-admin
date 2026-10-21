@@ -14,6 +14,7 @@ import { Modal } from '@/components/common/Modal';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useToast } from '@/context/ToastContext';
 import { formatDate } from '@/lib/utils';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import { UserCheck, Plus, Edit2, Trash2, Shield, Lock } from 'lucide-react';
 
 export const UsersList: React.FC = () => {
@@ -37,6 +38,9 @@ export const UsersList: React.FC = () => {
   const [role, setRole] = useState<AdminRole>('store_manager');
   const [isActive, setIsActive] = useState(true);
 
+  // Validation Errors
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+
   const resetForm = () => {
     setEditingUser(null);
     setEmail('');
@@ -45,6 +49,7 @@ export const UsersList: React.FC = () => {
     setLastName('');
     setRole('store_manager');
     setIsActive(true);
+    setFieldErrors({});
   };
 
   const openCreate = () => {
@@ -60,6 +65,7 @@ export const UsersList: React.FC = () => {
     setLastName(u.lastName);
     setRole(u.role);
     setIsActive(u.isActive);
+    setFieldErrors({});
     setModalOpen(true);
   };
 
@@ -89,7 +95,17 @@ export const UsersList: React.FC = () => {
       resetForm();
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to save staff account.');
+      const parsed = parseApiError(err, 'Failed to save staff account.');
+      if (parsed.isValidationError && Object.keys(parsed.fieldErrors).length > 0) {
+        setFieldErrors(parsed.fieldErrors);
+        if (parsed.generalErrors.length > 0) {
+          toast.error(parsed.generalErrors.join(', '));
+        } else if (parsed.message && parsed.message !== 'Validation failed on submitted payload') {
+          toast.error(parsed.message);
+        }
+      } else {
+        toast.error(parsed.message);
+      }
     },
   });
 
@@ -101,7 +117,7 @@ export const UsersList: React.FC = () => {
       setDeleteTarget(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to revoke staff access.');
+      toast.error(parseApiError(err, 'Failed to revoke staff access.').message);
     },
   });
 
@@ -208,25 +224,46 @@ export const UsersList: React.FC = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            const errs: Record<string, string[]> = {};
+            if (!firstName.trim()) errs.firstName = ['First name is required.'];
+            if (!lastName.trim()) errs.lastName = ['Last name is required.'];
+            if (!editingUser) {
+              if (!email.trim()) errs.email = ['Email address is required.'];
+              if (!password.trim()) {
+                errs.password = ['Password is required.'];
+              } else if (password.trim().length < 8) {
+                errs.password = ['Password must be at least 8 characters long'];
+              }
+            }
+            if (Object.keys(errs).length > 0) {
+              setFieldErrors(errs);
+              return;
+            }
             saveMutation.mutate();
           }}
           className="space-y-4"
         >
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="First Name" required>
+            <FormField label="First Name" required error={getFieldError(fieldErrors, 'firstName', 'first_name')}>
               <Input
                 placeholder="e.g. Marco"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'firstName', 'first_name'));
+                }}
                 required
               />
             </FormField>
 
-            <FormField label="Last Name" required>
+            <FormField label="Last Name" required error={getFieldError(fieldErrors, 'lastName', 'last_name')}>
               <Input
                 placeholder="e.g. Mancini"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'lastName', 'last_name'));
+                }}
                 required
               />
             </FormField>
@@ -234,32 +271,41 @@ export const UsersList: React.FC = () => {
 
           {!editingUser && (
             <>
-              <FormField label="Email Address" required>
+              <FormField label="Email Address" required error={getFieldError(fieldErrors, 'email')}>
                 <Input
                   type="email"
                   placeholder="marco.m@ateliervalenti.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setFieldErrors((prev) => clearFieldError(prev, 'email'));
+                  }}
                   required
                 />
               </FormField>
 
-              <FormField label="Temporary Password" required>
+              <FormField label="Temporary Password" required error={getFieldError(fieldErrors, 'password')}>
                 <Input
                   type="password"
                   placeholder="Min 8 characters"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setFieldErrors((prev) => clearFieldError(prev, 'password'));
+                  }}
                   required
                 />
               </FormField>
             </>
           )}
 
-          <FormField label="Administrative Role" required>
+          <FormField label="Administrative Role" required error={getFieldError(fieldErrors, 'role')}>
             <Select
               value={role}
-              onChange={(e) => setRole(e.target.value as AdminRole)}
+              onChange={(e) => {
+                setRole(e.target.value as AdminRole);
+                setFieldErrors((prev) => clearFieldError(prev, 'role'));
+              }}
             >
               <option value="store_manager">Store Manager (Catalogue & Commissions)</option>
               <option value="content_editor">Content Editor (CMS & Social Looks)</option>

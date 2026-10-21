@@ -11,6 +11,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Pagination } from '@/components/tables/Pagination';
 import { useToast } from '@/context/ToastContext';
 import { formatFileSize, formatDate } from '@/lib/utils';
+import { parseApiError } from '@/lib/apiErrors';
 import {
   Image as ImageIcon,
   Search,
@@ -51,7 +52,7 @@ export const MediaLibrary: React.FC = () => {
       setDeleteTarget(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to delete asset.');
+      toast.error(parseApiError(err, 'Failed to delete asset.').message);
     },
   });
 

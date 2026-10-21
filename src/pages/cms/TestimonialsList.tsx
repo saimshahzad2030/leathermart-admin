@@ -13,6 +13,7 @@ import { Modal } from '@/components/common/Modal';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { StatusBadge } from '@/components/common/Badge';
 import { useToast } from '@/context/ToastContext';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import { Plus, Edit2, Trash2, Star, MessageSquareQuote } from 'lucide-react';
 
 export const TestimonialsList: React.FC = () => {
@@ -35,6 +36,8 @@ export const TestimonialsList: React.FC = () => {
   const [quote, setQuote] = useState('');
   const [rating, setRating] = useState(5);
   const [isPublished, setIsPublished] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [formError, setFormError] = useState('');
 
   const resetForm = () => {
     setEditingItem(null);
@@ -45,6 +48,8 @@ export const TestimonialsList: React.FC = () => {
     setQuote('');
     setRating(5);
     setIsPublished(true);
+    setFieldErrors({});
+    setFormError('');
   };
 
   const openCreate = () => {
@@ -53,6 +58,7 @@ export const TestimonialsList: React.FC = () => {
   };
 
   const openEdit = (t: Testimonial) => {
+    resetForm();
     setEditingItem(t);
     setAuthor(t.author);
     setCity(t.city);
@@ -87,7 +93,12 @@ export const TestimonialsList: React.FC = () => {
       resetForm();
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to save testimonial.');
+      const parsed = parseApiError(err, 'Failed to save testimonial.');
+      setFieldErrors(parsed.fieldErrors);
+      setFormError(parsed.message);
+      if (!parsed.hasFieldErrors) {
+        toast.error(parsed.message);
+      }
     },
   });
 
@@ -99,7 +110,7 @@ export const TestimonialsList: React.FC = () => {
       setDeleteTarget(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to delete testimonial.');
+      toast.error(parseApiError(err, 'Failed to delete testimonial.').message);
     },
   });
 
@@ -204,60 +215,84 @@ export const TestimonialsList: React.FC = () => {
           }}
           className="space-y-4"
         >
-          <FormField label="Client Author" required>
+          {formError && (
+            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs">
+              {formError}
+            </div>
+          )}
+
+          <FormField label="Client Author" required error={getFieldError(fieldErrors, 'author')}>
             <Input
               placeholder="e.g. Julian De Vries"
               value={author}
-              onChange={(e) => setAuthor(e.target.value)}
+              onChange={(e) => {
+                setAuthor(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'author'));
+              }}
               required
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="City" required>
+            <FormField label="City" required error={getFieldError(fieldErrors, 'city')}>
               <Input
                 placeholder="e.g. Amsterdam"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => {
+                  setCity(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'city'));
+                }}
                 required
               />
             </FormField>
-            <FormField label="Country" required>
+            <FormField label="Country" required error={getFieldError(fieldErrors, 'country')}>
               <Input
                 placeholder="e.g. Netherlands"
                 value={country}
-                onChange={(e) => setCountry(e.target.value)}
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'country'));
+                }}
                 required
               />
             </FormField>
           </div>
 
-          <FormField label="Verified Garment Name" required>
+          <FormField label="Verified Garment Name" required error={getFieldError(fieldErrors, 'verifiedGarment', 'verified_garment')}>
             <Input
               placeholder="e.g. Montreal Leather Bomber"
               value={verifiedGarment}
-              onChange={(e) => setVerifiedGarment(e.target.value)}
+              onChange={(e) => {
+                setVerifiedGarment(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'verifiedGarment', 'verified_garment'));
+              }}
               required
             />
           </FormField>
 
-          <FormField label="Star Rating (1 - 5)" required>
+          <FormField label="Star Rating (1 - 5)" required error={getFieldError(fieldErrors, 'rating')}>
             <Input
               type="number"
               min={1}
               max={5}
               value={rating}
-              onChange={(e) => setRating(Number(e.target.value))}
+              onChange={(e) => {
+                setRating(Number(e.target.value));
+                setFieldErrors((prev) => clearFieldError(prev, 'rating'));
+              }}
               required
             />
           </FormField>
 
-          <FormField label="Quote Narrative" required>
+          <FormField label="Quote Narrative" required error={getFieldError(fieldErrors, 'quote')}>
             <Textarea
               rows={3}
               placeholder="Quote text..."
               value={quote}
-              onChange={(e) => setQuote(e.target.value)}
+              onChange={(e) => {
+                setQuote(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'quote'));
+              }}
               required
             />
           </FormField>

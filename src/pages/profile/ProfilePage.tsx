@@ -9,6 +9,7 @@ import { StatusBadge } from '@/components/common/Badge';
 import { useToast } from '@/context/ToastContext';
 import { formatDate } from '@/lib/utils';
 import { Shield, Lock, User, KeyRound, CheckCircle2 } from 'lucide-react';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 
 export const ProfilePage: React.FC = () => {
   const { user, refreshUser } = useAuth();
@@ -19,22 +20,29 @@ export const ProfilePage: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChanging, setIsChanging] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
 
+    const clientErrors: Record<string, string[]> = {};
     if (!currentPassword) {
-      toast.error('Current password is required.');
-      return;
+      clientErrors.currentPassword = ['Current password is required.'];
+    }
+    if (!newPassword) {
+      clientErrors.newPassword = ['New password is required.'];
+    } else if (newPassword.length < 8) {
+      clientErrors.newPassword = ['New password must be at least 8 characters long.'];
+    }
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+      clientErrors.confirmPassword = ['New passwords do not match.'];
+    } else if (!confirmPassword) {
+      clientErrors.confirmPassword = ['Please confirm your new password.'];
     }
 
-    if (newPassword.length < 8) {
-      toast.error('New password must be at least 8 characters.');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('New passwords do not match.');
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors);
       return;
     }
 
@@ -45,8 +53,19 @@ export const ProfilePage: React.FC = () => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      setFieldErrors({});
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to change password.');
+      const parsed = parseApiError(err, 'Failed to change password.');
+      if (parsed.isValidationError && Object.keys(parsed.fieldErrors).length > 0) {
+        setFieldErrors(parsed.fieldErrors);
+        if (parsed.generalErrors.length > 0) {
+          toast.error(parsed.generalErrors.join(', '));
+        } else if (parsed.message && parsed.message !== 'Validation failed on submitted payload') {
+          toast.error(parsed.message);
+        }
+      } else {
+        toast.error(parsed.message);
+      }
     } finally {
       setIsChanging(false);
     }
@@ -140,34 +159,43 @@ export const ProfilePage: React.FC = () => {
           </div>
 
           <form onSubmit={handlePasswordChange} className="space-y-4">
-            <FormField label="Current Password" required>
+            <FormField label="Current Password" required error={getFieldError(fieldErrors, 'currentPassword', 'current_password')}>
               <Input
                 type="password"
                 placeholder="••••••••••••"
                 value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'currentPassword', 'current_password'));
+                }}
                 leftIcon={<Lock className="w-4 h-4" />}
                 required
               />
             </FormField>
 
-            <FormField label="New Password (min 8 chars)" required>
+            <FormField label="New Password (min 8 chars)" required error={getFieldError(fieldErrors, 'newPassword', 'new_password')}>
               <Input
                 type="password"
                 placeholder="••••••••••••"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'newPassword', 'new_password'));
+                }}
                 leftIcon={<Lock className="w-4 h-4" />}
                 required
               />
             </FormField>
 
-            <FormField label="Confirm New Password" required>
+            <FormField label="Confirm New Password" required error={getFieldError(fieldErrors, 'confirmPassword', 'confirm_password')}>
               <Input
                 type="password"
                 placeholder="••••••••••••"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'confirmPassword', 'confirm_password'));
+                }}
                 leftIcon={<Lock className="w-4 h-4" />}
                 required
               />

@@ -10,6 +10,7 @@ import { Textarea } from '@/components/forms/Textarea';
 import { Switch } from '@/components/forms/Switch';
 import { FormField } from '@/components/forms/FormField';
 import { useToast } from '@/context/ToastContext';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import {
   Settings,
   BellRing,
@@ -20,6 +21,7 @@ import {
   Plus,
   Trash2,
   Navigation,
+  AlertCircle,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -27,6 +29,8 @@ export const SettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<'announcement' | 'shipping' | 'footer' | 'search' | 'menu'>('announcement');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [formError, setFormError] = useState('');
 
   const {
     data: settings,
@@ -129,9 +133,16 @@ export const SettingsPage: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+      setFieldErrors({});
+      setFormError('');
       toast.success('Store configuration updated successfully.');
     },
-    onError: () => toast.error('Failed to update store settings.'),
+    onError: (err: any) => {
+      const parsed = parseApiError(err, 'Failed to update store settings.');
+      setFieldErrors(parsed.fieldErrors);
+      setFormError(parsed.message);
+      toast.error(parsed.message);
+    },
   });
 
   // Save Keywords Mutation
@@ -139,9 +150,15 @@ export const SettingsPage: React.FC = () => {
     mutationFn: () => settingsApi.updateSearchKeywords(keywords),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+      setFieldErrors({});
+      setFormError('');
       toast.success('Search suggestion keywords saved.');
     },
-    onError: () => toast.error('Failed to update search keywords.'),
+    onError: (err: any) => {
+      const parsed = parseApiError(err, 'Failed to update search keywords.');
+      setFieldErrors(parsed.fieldErrors);
+      toast.error(parsed.message);
+    },
   });
 
   const handleAddKeyword = () => {
@@ -246,6 +263,13 @@ export const SettingsPage: React.FC = () => {
         </button>
       </div>
 
+      {formError && (
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span>{formError}</span>
+        </div>
+      )}
+
       {isLoading ? (
         <FormSettingsSkeleton />
       ) : (
@@ -261,46 +285,61 @@ export const SettingsPage: React.FC = () => {
           />
 
           <div className="grid grid-cols-2 gap-4 pt-2">
-            <FormField label="Kicker Badge">
+            <FormField label="Kicker Badge" error={getFieldError(fieldErrors, 'badge', 'announcement.badge')}>
               <Input
                 placeholder="e.g. Milano Atelier"
                 value={announcementBadge}
-                onChange={(e) => setAnnouncementBadge(e.target.value)}
+                onChange={(e) => {
+                  setAnnouncementBadge(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'badge', 'announcement.badge'));
+                }}
               />
             </FormField>
 
-            <FormField label="European Country Notice">
+            <FormField label="European Country Notice" error={getFieldError(fieldErrors, 'countryNotice', 'country_notice', 'announcement.countryNotice')}>
               <Input
                 placeholder="e.g. IT • DE • FR • CH • UK"
                 value={countryNotice}
-                onChange={(e) => setCountryNotice(e.target.value)}
+                onChange={(e) => {
+                  setCountryNotice(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'countryNotice', 'country_notice', 'announcement.countryNotice'));
+                }}
               />
             </FormField>
           </div>
 
-          <FormField label="Main Announcement Message">
+          <FormField label="Main Announcement Message" error={getFieldError(fieldErrors, 'message', 'announcement.message')}>
             <Textarea
               rows={2}
               placeholder="e.g. Complimentary Express European Delivery on All Orders Over €250"
               value={announcementMessage}
-              onChange={(e) => setAnnouncementMessage(e.target.value)}
+              onChange={(e) => {
+                setAnnouncementMessage(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'message', 'announcement.message'));
+              }}
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Link Text">
+            <FormField label="Link Text" error={getFieldError(fieldErrors, 'linkText', 'link_text', 'announcement.linkText')}>
               <Input
                 placeholder="e.g. EXPLORE BESPOKE"
                 value={announcementLinkText}
-                onChange={(e) => setAnnouncementLinkText(e.target.value)}
+                onChange={(e) => {
+                  setAnnouncementLinkText(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'linkText', 'link_text', 'announcement.linkText'));
+                }}
               />
             </FormField>
 
-            <FormField label="Link Destination">
+            <FormField label="Link Destination" error={getFieldError(fieldErrors, 'linkHref', 'link_href', 'announcement.linkHref')}>
               <Input
                 placeholder="e.g. /customize"
                 value={announcementLinkHref}
-                onChange={(e) => setAnnouncementLinkHref(e.target.value)}
+                onChange={(e) => {
+                  setAnnouncementLinkHref(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'linkHref', 'link_href', 'announcement.linkHref'));
+                }}
               />
             </FormField>
           </div>
@@ -311,19 +350,25 @@ export const SettingsPage: React.FC = () => {
       {activeTab === 'shipping' && (
         <div className="p-6 rounded-2xl bg-surface border border-theme shadow-xs space-y-6 max-w-3xl">
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Free Delivery Threshold (€ EUR)">
+            <FormField label="Free Delivery Threshold (€ EUR)" error={getFieldError(fieldErrors, 'freeShippingThreshold', 'free_shipping_threshold', 'shipping.freeShippingThreshold')}>
               <Input
                 type="number"
                 value={freeShippingThreshold}
-                onChange={(e) => setFreeShippingThreshold(Number(e.target.value))}
+                onChange={(e) => {
+                  setFreeShippingThreshold(Number(e.target.value));
+                  setFieldErrors((prev) => clearFieldError(prev, 'freeShippingThreshold', 'free_shipping_threshold', 'shipping.freeShippingThreshold'));
+                }}
               />
             </FormField>
 
-            <FormField label="Standard Shipping Cost (€ EUR)">
+            <FormField label="Standard Shipping Cost (€ EUR)" error={getFieldError(fieldErrors, 'standardShippingCost', 'standard_shipping_cost', 'shipping.standardShippingCost')}>
               <Input
                 type="number"
                 value={standardShippingCost}
-                onChange={(e) => setStandardShippingCost(Number(e.target.value))}
+                onChange={(e) => {
+                  setStandardShippingCost(Number(e.target.value));
+                  setFieldErrors((prev) => clearFieldError(prev, 'standardShippingCost', 'standard_shipping_cost', 'shipping.standardShippingCost'));
+                }}
               />
             </FormField>
           </div>
@@ -418,35 +463,47 @@ export const SettingsPage: React.FC = () => {
       {/* Tab 3: Footer & Certifications */}
       {activeTab === 'footer' && (
         <div className="p-6 rounded-2xl bg-surface border border-theme shadow-xs space-y-4 max-w-2xl">
-          <FormField label="EU Compliance & Certification Line">
+          <FormField label="EU Compliance & Certification Line" error={getFieldError(fieldErrors, 'certificationLine', 'certification_line', 'footer.certificationLine')}>
             <Input
               placeholder="e.g. ✔️ AZO-Free Leather · ✔️ EU REACH Compliant"
               value={certificationLine}
-              onChange={(e) => setCertificationLine(e.target.value)}
+              onChange={(e) => {
+                setCertificationLine(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'certificationLine', 'certification_line', 'footer.certificationLine'));
+              }}
             />
           </FormField>
 
-          <FormField label="Milan Atelier Flagship Address">
+          <FormField label="Milan Atelier Flagship Address" error={getFieldError(fieldErrors, 'atelierAddress', 'atelier_address', 'footer.atelierAddress')}>
             <Input
               placeholder="e.g. Via Montenapoleone, 27, 20121 Milano, Italy"
               value={atelierAddress}
-              onChange={(e) => setAtelierAddress(e.target.value)}
+              onChange={(e) => {
+                setAtelierAddress(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'atelierAddress', 'atelier_address', 'footer.atelierAddress'));
+              }}
             />
           </FormField>
 
-          <FormField label="Official Instagram Handle">
+          <FormField label="Official Instagram Handle" error={getFieldError(fieldErrors, 'instagramHandle', 'instagram_handle', 'footer.instagramHandle')}>
             <Input
               placeholder="@ATELIERVALENTI"
               value={instagramHandle}
-              onChange={(e) => setInstagramHandle(e.target.value)}
+              onChange={(e) => {
+                setInstagramHandle(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'instagramHandle', 'instagram_handle', 'footer.instagramHandle'));
+              }}
             />
           </FormField>
 
-          <FormField label="Copyright Notice">
+          <FormField label="Copyright Notice" error={getFieldError(fieldErrors, 'copyrightText', 'copyright_text', 'footer.copyrightText')}>
             <Input
               placeholder="© 2026 Atelier Valenti Milano. All rights reserved."
               value={copyrightText}
-              onChange={(e) => setCopyrightText(e.target.value)}
+              onChange={(e) => {
+                setCopyrightText(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'copyrightText', 'copyright_text', 'footer.copyrightText'));
+              }}
             />
           </FormField>
         </div>

@@ -19,6 +19,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { StatusBadge } from '@/components/common/Badge';
 import { useToast } from '@/context/ToastContext';
 import { formatCurrency } from '@/lib/utils';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import {
   Sliders,
   Scissors,
@@ -35,6 +36,8 @@ export const BespokeStudioOptions: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<'silhouettes' | 'leathers' | 'colors' | 'linings' | 'hardware'>('silhouettes');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [formError, setFormError] = useState('');
 
   const { data: options, isLoading, isFetching, refetch } = useQuery({
     queryKey: ['custom-studio-options'],
@@ -70,6 +73,8 @@ export const BespokeStudioOptions: React.FC = () => {
     setOrigin('');
     setHex('#11100F');
     setFinish('');
+    setFieldErrors({});
+    setFormError('');
   };
 
   const openCreateModal = () => {
@@ -78,6 +83,7 @@ export const BespokeStudioOptions: React.FC = () => {
   };
 
   const openEditModal = (item: any) => {
+    resetForm();
     setEditingItem(item);
     setSlug(item.slug || '');
     setName(item.name || '');
@@ -166,7 +172,12 @@ export const BespokeStudioOptions: React.FC = () => {
       resetForm();
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to save option.');
+      const parsed = parseApiError(err, 'Failed to save option.');
+      setFieldErrors(parsed.fieldErrors);
+      setFormError(parsed.message);
+      if (!parsed.hasFieldErrors) {
+        toast.error(parsed.message);
+      }
     },
   });
 
@@ -186,7 +197,7 @@ export const BespokeStudioOptions: React.FC = () => {
       setDeleteTarget(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to delete option.');
+      toast.error(parseApiError(err, 'Failed to delete option.').message);
     },
   });
 
@@ -507,32 +518,47 @@ export const BespokeStudioOptions: React.FC = () => {
           }}
           className="space-y-4"
         >
+          {formError && (
+            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs">
+              {formError}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Name" required>
+            <FormField label="Name" required error={getFieldError(fieldErrors, 'name')}>
               <Input
                 placeholder="e.g. Biker Jacket"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'name'));
+                }}
                 required
               />
             </FormField>
-            <FormField label="Slug" required>
+            <FormField label="Slug" required error={getFieldError(fieldErrors, 'slug')}>
               <Input
                 placeholder="e.g. biker"
                 value={slug}
-                onChange={(e) => setSlug(e.target.value)}
+                onChange={(e) => {
+                  setSlug(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'slug'));
+                }}
                 required
               />
             </FormField>
           </div>
 
           {activeTab === 'silhouettes' && (
-            <FormField label="Base Price (€ EUR)" required>
+            <FormField label="Base Price (€ EUR)" required error={getFieldError(fieldErrors, 'basePrice', 'base_price')}>
               <Input
                 type="number"
                 placeholder="e.g. 520"
                 value={basePrice}
-                onChange={(e) => setBasePrice(e.target.value)}
+                onChange={(e) => {
+                  setBasePrice(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'basePrice', 'base_price'));
+                }}
                 required
               />
             </FormField>
@@ -541,44 +567,59 @@ export const BespokeStudioOptions: React.FC = () => {
           {activeTab === 'leathers' && (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <FormField label="Weight Specification">
+                <FormField label="Weight Specification" error={getFieldError(fieldErrors, 'weight')}>
                   <Input
                     placeholder="e.g. 1.2mm"
                     value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
+                    onChange={(e) => {
+                      setWeight(e.target.value);
+                      setFieldErrors((prev) => clearFieldError(prev, 'weight'));
+                    }}
                   />
                 </FormField>
-                <FormField label="Origin / Tannery">
+                <FormField label="Origin / Tannery" error={getFieldError(fieldErrors, 'origin')}>
                   <Input
                     placeholder="e.g. Santa Croce, Tuscany"
                     value={origin}
-                    onChange={(e) => setOrigin(e.target.value)}
+                    onChange={(e) => {
+                      setOrigin(e.target.value);
+                      setFieldErrors((prev) => clearFieldError(prev, 'origin'));
+                    }}
                   />
                 </FormField>
               </div>
-              <FormField label="Extra Surcharge (€ EUR)">
+              <FormField label="Extra Surcharge (€ EUR)" error={getFieldError(fieldErrors, 'extraPrice', 'extra_price')}>
                 <Input
                   type="number"
                   placeholder="e.g. 80"
                   value={extraPrice}
-                  onChange={(e) => setExtraPrice(e.target.value)}
+                  onChange={(e) => {
+                    setExtraPrice(e.target.value);
+                    setFieldErrors((prev) => clearFieldError(prev, 'extraPrice', 'extra_price'));
+                  }}
                 />
               </FormField>
             </>
           )}
 
           {activeTab === 'colors' && (
-            <FormField label="Color Hex Code" required>
+            <FormField label="Color Hex Code" required error={getFieldError(fieldErrors, 'hex')}>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
                   value={hex}
-                  onChange={(e) => setHex(e.target.value)}
+                  onChange={(e) => {
+                    setHex(e.target.value);
+                    setFieldErrors((prev) => clearFieldError(prev, 'hex'));
+                  }}
                   className="w-10 h-10 rounded-xl border border-theme bg-transparent cursor-pointer p-0"
                 />
                 <Input
                   value={hex}
-                  onChange={(e) => setHex(e.target.value)}
+                  onChange={(e) => {
+                    setHex(e.target.value);
+                    setFieldErrors((prev) => clearFieldError(prev, 'hex'));
+                  }}
                   className="font-mono text-xs"
                 />
               </div>
@@ -586,43 +627,55 @@ export const BespokeStudioOptions: React.FC = () => {
           )}
 
           {activeTab === 'linings' && (
-            <FormField label="Extra Surcharge (€ EUR)">
+            <FormField label="Extra Surcharge (€ EUR)" error={getFieldError(fieldErrors, 'extraPrice', 'extra_price')}>
               <Input
                 type="number"
                 placeholder="e.g. 40"
                 value={extraPrice}
-                onChange={(e) => setExtraPrice(e.target.value)}
+                onChange={(e) => {
+                  setExtraPrice(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'extraPrice', 'extra_price'));
+                }}
               />
             </FormField>
           )}
 
           {activeTab === 'hardware' && (
             <>
-              <FormField label="Metal Finish">
+              <FormField label="Metal Finish" error={getFieldError(fieldErrors, 'finish')}>
                 <Input
                   placeholder="e.g. Antiqued Brushed Brass"
                   value={finish}
-                  onChange={(e) => setFinish(e.target.value)}
+                  onChange={(e) => {
+                    setFinish(e.target.value);
+                    setFieldErrors((prev) => clearFieldError(prev, 'finish'));
+                  }}
                 />
               </FormField>
-              <FormField label="Extra Surcharge (€ EUR)">
+              <FormField label="Extra Surcharge (€ EUR)" error={getFieldError(fieldErrors, 'extraPrice', 'extra_price')}>
                 <Input
                   type="number"
                   placeholder="e.g. 25"
                   value={extraPrice}
-                  onChange={(e) => setExtraPrice(e.target.value)}
+                  onChange={(e) => {
+                    setExtraPrice(e.target.value);
+                    setFieldErrors((prev) => clearFieldError(prev, 'extraPrice', 'extra_price'));
+                  }}
                 />
               </FormField>
             </>
           )}
 
           {activeTab !== 'colors' && (
-            <FormField label="Description">
+            <FormField label="Description" error={getFieldError(fieldErrors, 'description')}>
               <Textarea
                 rows={2}
                 placeholder="Details of material or construction..."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'description'));
+                }}
               />
             </FormField>
           )}

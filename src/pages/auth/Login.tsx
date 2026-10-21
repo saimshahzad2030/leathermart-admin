@@ -6,6 +6,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/forms/Input';
 import { FormField } from '@/components/forms/FormField';
 import { Lock, Mail, Shield, AlertCircle } from 'lucide-react';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -17,35 +18,48 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
   const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setFieldErrors({});
 
-    if (!email || !password) {
-      setErrorMessage('Please enter both email and password.');
+    const clientErrors: Record<string, string[]> = {};
+    if (!email.trim()) {
+      clientErrors.email = ['Email address is required.'];
+    }
+    if (!password) {
+      clientErrors.password = ['Password is required.'];
+    }
+
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors);
       return;
     }
 
     try {
       setIsLoading(true);
-      await login({ email, password });
+      await login({ email: email.trim(), password });
       toast.success('Authenticated successfully. Welcome back.');
       navigate(from, { replace: true });
     } catch (err: any) {
-      const code = err.response?.data?.errorCode;
-      const msg = err.response?.data?.message;
-
-      if (code === 'ERR_INVALID_CREDENTIALS') {
+      const parsed = parseApiError(err, 'Authentication failed. Please check backend connectivity.');
+      if (parsed.errorCode === 'ERR_INVALID_CREDENTIALS') {
         setErrorMessage('Invalid credentials. Please verify your email and password.');
-      } else if (code === 'ERR_ACCOUNT_DEACTIVATED') {
+      } else if (parsed.errorCode === 'ERR_ACCOUNT_DEACTIVATED') {
         setErrorMessage('This administrative account has been deactivated.');
-      } else if (code === 'ERR_AUTH_RATE_LIMIT') {
+      } else if (parsed.errorCode === 'ERR_AUTH_RATE_LIMIT' || parsed.statusCode === 429) {
         setErrorMessage('Too many login attempts. Please wait 15 minutes before retrying.');
+      } else if (parsed.isValidationError && Object.keys(parsed.fieldErrors).length > 0) {
+        setFieldErrors(parsed.fieldErrors);
+        if (parsed.generalErrors.length > 0) {
+          setErrorMessage(parsed.generalErrors.join(', '));
+        }
       } else {
-        setErrorMessage(msg || 'Authentication failed. Please check backend connectivity.');
+        setErrorMessage(parsed.message);
       }
     } finally {
       setIsLoading(false);
@@ -83,24 +97,32 @@ export const Login: React.FC = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField label="Staff Email" required>
+          <FormField label="Staff Email" required error={getFieldError(fieldErrors, 'email')}>
             <Input
               type="email"
               placeholder="admin@ateliervalenti.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'email'));
+                setErrorMessage('');
+              }}
               leftIcon={<Mail className="w-4 h-4" />}
               autoComplete="email"
               required
             />
           </FormField>
 
-          <FormField label="Security Key / Password" required>
+          <FormField label="Security Key / Password" required error={getFieldError(fieldErrors, 'password')}>
             <Input
               type="password"
               placeholder="••••••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'password'));
+                setErrorMessage('');
+              }}
               leftIcon={<Lock className="w-4 h-4" />}
               autoComplete="current-password"
               required

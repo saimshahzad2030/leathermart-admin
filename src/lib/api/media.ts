@@ -24,7 +24,7 @@ export const mediaApi = {
 
     const res = await apiClient.post<ApiResponse<MediaAsset>>('/admin/media/upload', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': undefined,
       },
     });
     return res.data.data;

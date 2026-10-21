@@ -13,6 +13,7 @@ import { Modal } from '@/components/common/Modal';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { StatusBadge } from '@/components/common/Badge';
 import { useToast } from '@/context/ToastContext';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import { Plus, Edit2, Trash2, FolderTree, Sparkles, Layers } from 'lucide-react';
 
 export const CategoriesList: React.FC = () => {
@@ -20,6 +21,10 @@ export const CategoriesList: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<'categories' | 'collections'>('categories');
+
+  // Form validation errors
+  const [catFieldErrors, setCatFieldErrors] = useState<Record<string, string[]>>({});
+  const [colFieldErrors, setColFieldErrors] = useState<Record<string, string[]>>({});
 
   // Categories Queries & Mutations
   const {
@@ -92,7 +97,17 @@ export const CategoriesList: React.FC = () => {
       resetCategoryForm();
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to save category.');
+      const parsed = parseApiError(err, 'Failed to save category.');
+      if (parsed.isValidationError && Object.keys(parsed.fieldErrors).length > 0) {
+        setCatFieldErrors(parsed.fieldErrors);
+        if (parsed.generalErrors.length > 0) {
+          toast.error(parsed.generalErrors.join(', '));
+        } else if (parsed.message && parsed.message !== 'Validation failed on submitted payload') {
+          toast.error(parsed.message);
+        }
+      } else {
+        toast.error(parsed.message);
+      }
     },
   });
 
@@ -105,7 +120,7 @@ export const CategoriesList: React.FC = () => {
       setDeleteCategoryTarget(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to delete category.');
+      toast.error(parseApiError(err, 'Failed to delete category.').message);
     },
   });
 
@@ -136,7 +151,17 @@ export const CategoriesList: React.FC = () => {
       resetCollectionForm();
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to save collection.');
+      const parsed = parseApiError(err, 'Failed to save collection.');
+      if (parsed.isValidationError && Object.keys(parsed.fieldErrors).length > 0) {
+        setColFieldErrors(parsed.fieldErrors);
+        if (parsed.generalErrors.length > 0) {
+          toast.error(parsed.generalErrors.join(', '));
+        } else if (parsed.message && parsed.message !== 'Validation failed on submitted payload') {
+          toast.error(parsed.message);
+        }
+      } else {
+        toast.error(parsed.message);
+      }
     },
   });
 
@@ -149,7 +174,7 @@ export const CategoriesList: React.FC = () => {
       setDeleteCollectionTarget(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to delete collection.');
+      toast.error(parseApiError(err, 'Failed to delete collection.').message);
     },
   });
 
@@ -161,6 +186,7 @@ export const CategoriesList: React.FC = () => {
     setCatDescription('');
     setCatHeroImage('');
     setCatHighlightSpecs(['']);
+    setCatFieldErrors({});
   };
 
   const openEditCategory = (cat: Category) => {
@@ -171,6 +197,7 @@ export const CategoriesList: React.FC = () => {
     setCatDescription(cat.description || '');
     setCatHeroImage(cat.heroImage || '');
     setCatHighlightSpecs(cat.highlightSpecs?.length ? cat.highlightSpecs : ['']);
+    setCatFieldErrors({});
     setCategoryModalOpen(true);
   };
 
@@ -183,6 +210,7 @@ export const CategoriesList: React.FC = () => {
     setColDescription('');
     setColHeroImage('');
     setColBadge('Capsule Collection');
+    setColFieldErrors({});
   };
 
   const openEditCollection = (col: Collection) => {
@@ -194,6 +222,7 @@ export const CategoriesList: React.FC = () => {
     setColDescription(col.description || '');
     setColHeroImage(col.heroImage || '');
     setColBadge(col.badge || 'Capsule Collection');
+    setColFieldErrors({});
     setCollectionModalOpen(true);
   };
 
@@ -458,46 +487,61 @@ export const CategoriesList: React.FC = () => {
           className="space-y-4"
         >
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Category Name" required>
+            <FormField label="Category Name" required error={getFieldError(catFieldErrors, 'name')}>
               <Input
                 placeholder="e.g. Aviator & Shearling"
                 value={catName}
-                onChange={(e) => setCatName(e.target.value)}
+                onChange={(e) => {
+                  setCatName(e.target.value);
+                  setCatFieldErrors((prev) => clearFieldError(prev, 'name'));
+                }}
                 required
               />
             </FormField>
-            <FormField label="URL Slug" required>
+            <FormField label="URL Slug" required error={getFieldError(catFieldErrors, 'slug')}>
               <Input
                 placeholder="e.g. aviator"
                 value={catSlug}
-                onChange={(e) => setCatSlug(e.target.value)}
+                onChange={(e) => {
+                  setCatSlug(e.target.value);
+                  setCatFieldErrors((prev) => clearFieldError(prev, 'slug'));
+                }}
                 required
               />
             </FormField>
           </div>
 
-          <FormField label="Subtitle">
+          <FormField label="Subtitle" error={getFieldError(catFieldErrors, 'subtitle')}>
             <Input
               placeholder="e.g. Whole-pelt Spanish Merino shearling thermal defenses"
               value={catSubtitle}
-              onChange={(e) => setCatSubtitle(e.target.value)}
+              onChange={(e) => {
+                setCatSubtitle(e.target.value);
+                setCatFieldErrors((prev) => clearFieldError(prev, 'subtitle'));
+              }}
             />
           </FormField>
 
-          <FormField label="Description">
+          <FormField label="Description" error={getFieldError(catFieldErrors, 'description')}>
             <Textarea
               rows={3}
               placeholder="Detailed craft narrative..."
               value={catDescription}
-              onChange={(e) => setCatDescription(e.target.value)}
+              onChange={(e) => {
+                setCatDescription(e.target.value);
+                setCatFieldErrors((prev) => clearFieldError(prev, 'description'));
+              }}
             />
           </FormField>
 
-          <FormField label="Hero Image Photography">
+          <FormField label="Hero Image Photography" error={getFieldError(catFieldErrors, 'heroImage', 'hero_image')}>
             <ImageUploader
               folder="editorial"
               value={catHeroImage}
-              onChange={setCatHeroImage}
+              onChange={(url) => {
+                setCatHeroImage(url);
+                setCatFieldErrors((prev) => clearFieldError(prev, 'heroImage', 'hero_image'));
+              }}
             />
           </FormField>
 
@@ -528,64 +572,85 @@ export const CategoriesList: React.FC = () => {
           className="space-y-4"
         >
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Collection Title" required>
+            <FormField label="Collection Title" required error={getFieldError(colFieldErrors, 'title')}>
               <Input
                 placeholder="e.g. Inverno 2026 Lookbook"
                 value={colTitle}
-                onChange={(e) => setColTitle(e.target.value)}
+                onChange={(e) => {
+                  setColTitle(e.target.value);
+                  setColFieldErrors((prev) => clearFieldError(prev, 'title'));
+                }}
                 required
               />
             </FormField>
-            <FormField label="Season" required>
+            <FormField label="Season" required error={getFieldError(colFieldErrors, 'season')}>
               <Input
                 placeholder="e.g. Autumn / Winter 2026"
                 value={colSeason}
-                onChange={(e) => setColSeason(e.target.value)}
+                onChange={(e) => {
+                  setColSeason(e.target.value);
+                  setColFieldErrors((prev) => clearFieldError(prev, 'season'));
+                }}
                 required
               />
             </FormField>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Slug" required>
+            <FormField label="Slug" required error={getFieldError(colFieldErrors, 'slug')}>
               <Input
                 placeholder="e.g. inverno-26"
                 value={colSlug}
-                onChange={(e) => setColSlug(e.target.value)}
+                onChange={(e) => {
+                  setColSlug(e.target.value);
+                  setColFieldErrors((prev) => clearFieldError(prev, 'slug'));
+                }}
                 required
               />
             </FormField>
-            <FormField label="Badge">
+            <FormField label="Badge" error={getFieldError(colFieldErrors, 'badge')}>
               <Input
                 placeholder="e.g. Capsule Collection"
                 value={colBadge}
-                onChange={(e) => setColBadge(e.target.value)}
+                onChange={(e) => {
+                  setColBadge(e.target.value);
+                  setColFieldErrors((prev) => clearFieldError(prev, 'badge'));
+                }}
               />
             </FormField>
           </div>
 
-          <FormField label="Subtitle">
+          <FormField label="Subtitle" error={getFieldError(colFieldErrors, 'subtitle')}>
             <Input
               placeholder="e.g. Sculpted Silhouettes in Heavy Calfskin"
               value={colSubtitle}
-              onChange={(e) => setColSubtitle(e.target.value)}
+              onChange={(e) => {
+                setColSubtitle(e.target.value);
+                setColFieldErrors((prev) => clearFieldError(prev, 'subtitle'));
+              }}
             />
           </FormField>
 
-          <FormField label="Description">
+          <FormField label="Description" error={getFieldError(colFieldErrors, 'description')}>
             <Textarea
               rows={3}
               placeholder="Campaign notes and fashion week introduction..."
               value={colDescription}
-              onChange={(e) => setColDescription(e.target.value)}
+              onChange={(e) => {
+                setColDescription(e.target.value);
+                setColFieldErrors((prev) => clearFieldError(prev, 'description'));
+              }}
             />
           </FormField>
 
-          <FormField label="Cover Photography">
+          <FormField label="Cover Photography" error={getFieldError(colFieldErrors, 'heroImage', 'hero_image')}>
             <ImageUploader
               folder="lookbook"
               value={colHeroImage}
-              onChange={setColHeroImage}
+              onChange={(url) => {
+                setColHeroImage(url);
+                setColFieldErrors((prev) => clearFieldError(prev, 'heroImage', 'hero_image'));
+              }}
             />
           </FormField>
 

@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ShieldCheck,
   LucideIcon,
+  Inbox,
 } from 'lucide-react';
 
 interface NavItem {
@@ -67,6 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'Atelier & Clients',
       items: [
+        { label: 'Contact Inquiries', href: '/contact-messages', icon: Inbox },
         { label: 'Bespoke Commissions', href: '/commissions', icon: FileText },
         { label: 'Review Moderation', href: '/reviews', icon: Star },
         { label: 'Bespoke Studio Options', href: '/bespoke-studio', icon: Sliders },

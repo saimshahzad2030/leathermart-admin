@@ -13,6 +13,7 @@ import { Modal } from '@/components/common/Modal';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { StatusBadge } from '@/components/common/Badge';
 import { useToast } from '@/context/ToastContext';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import { Plus, Edit2, Trash2, Camera, ExternalLink } from 'lucide-react';
 
 export const SocialLooksList: React.FC = () => {
@@ -33,6 +34,8 @@ export const SocialLooksList: React.FC = () => {
   const [tag, setTag] = useState('@ATELIERVALENTI');
   const [instagramUrl, setInstagramUrl] = useState('');
   const [isPublished, setIsPublished] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [formError, setFormError] = useState('');
 
   const resetForm = () => {
     setEditingItem(null);
@@ -41,6 +44,8 @@ export const SocialLooksList: React.FC = () => {
     setTag('@ATELIERVALENTI');
     setInstagramUrl('');
     setIsPublished(true);
+    setFieldErrors({});
+    setFormError('');
   };
 
   const openCreate = () => {
@@ -49,6 +54,7 @@ export const SocialLooksList: React.FC = () => {
   };
 
   const openEdit = (item: SocialLook) => {
+    resetForm();
     setEditingItem(item);
     setImageUrl(item.imageUrl);
     setCaption(item.caption);
@@ -79,7 +85,12 @@ export const SocialLooksList: React.FC = () => {
       resetForm();
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to save social look.');
+      const parsed = parseApiError(err, 'Failed to save social look.');
+      setFieldErrors(parsed.fieldErrors);
+      setFormError(parsed.message);
+      if (!parsed.hasFieldErrors) {
+        toast.error(parsed.message);
+      }
     },
   });
 
@@ -91,7 +102,7 @@ export const SocialLooksList: React.FC = () => {
       setDeleteTarget(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to delete social look.');
+      toast.error(parseApiError(err, 'Failed to delete social look.').message);
     },
   });
 
@@ -198,37 +209,55 @@ export const SocialLooksList: React.FC = () => {
           }}
           className="space-y-4"
         >
-          <FormField label="Look Photography" required>
+          {formError && (
+            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs">
+              {formError}
+            </div>
+          )}
+
+          <FormField label="Look Photography" required error={getFieldError(fieldErrors, 'imageUrl', 'image_url')}>
             <ImageUploader
               folder="editorial"
               value={imageUrl}
-              onChange={setImageUrl}
+              onChange={(url) => {
+                setImageUrl(url);
+                setFieldErrors((prev) => clearFieldError(prev, 'imageUrl', 'image_url'));
+              }}
             />
           </FormField>
 
-          <FormField label="Caption / Context" required>
+          <FormField label="Caption / Context" required error={getFieldError(fieldErrors, 'caption')}>
             <Input
               placeholder="e.g. Spotted in Milan Fashion Week wearing custom Biker"
               value={caption}
-              onChange={(e) => setCaption(e.target.value)}
+              onChange={(e) => {
+                setCaption(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'caption'));
+              }}
               required
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Handle Tag">
+            <FormField label="Handle Tag" error={getFieldError(fieldErrors, 'tag')}>
               <Input
                 placeholder="@ATELIERVALENTI"
                 value={tag}
-                onChange={(e) => setTag(e.target.value)}
+                onChange={(e) => {
+                  setTag(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'tag'));
+                }}
               />
             </FormField>
 
-            <FormField label="Instagram Link (Optional)">
+            <FormField label="Instagram Link (Optional)" error={getFieldError(fieldErrors, 'instagramUrl', 'instagram_url')}>
               <Input
                 placeholder="https://instagram.com/p/..."
                 value={instagramUrl}
-                onChange={(e) => setInstagramUrl(e.target.value)}
+                onChange={(e) => {
+                  setInstagramUrl(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'instagramUrl', 'instagram_url'));
+                }}
               />
             </FormField>
           </div>

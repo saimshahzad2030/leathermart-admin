@@ -13,6 +13,7 @@ import { ImageUploader } from '@/components/forms/ImageUploader';
 import { Modal } from '@/components/common/Modal';
 import { StatusBadge } from '@/components/common/Badge';
 import { useToast } from '@/context/ToastContext';
+import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import { Sparkles, Edit2, Eye, EyeOff, LayoutTemplate, Link2, Loader2 } from 'lucide-react';
 
 export const CmsSectionsList: React.FC = () => {
@@ -37,6 +38,8 @@ export const CmsSectionsList: React.FC = () => {
   const [secondaryCtaLabel, setSecondaryCtaLabel] = useState('');
   const [secondaryCtaHref, setSecondaryCtaHref] = useState('');
   const [isVisible, setIsVisible] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [formError, setFormError] = useState('');
 
   // Visibility toggle mutation
   const toggleVisibilityMutation = useMutation({
@@ -69,9 +72,16 @@ export const CmsSectionsList: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-cms-sections'] });
       toast.success(`Section '${data?.sectionKey || 'CMS'}' updated successfully.`);
       setEditingSection(null);
+      setFieldErrors({});
+      setFormError('');
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to update section.');
+      const parsed = parseApiError(err, 'Failed to update section.');
+      setFieldErrors(parsed.fieldErrors);
+      setFormError(parsed.message);
+      if (!parsed.hasFieldErrors) {
+        toast.error(parsed.message);
+      }
     },
   });
 
@@ -87,6 +97,8 @@ export const CmsSectionsList: React.FC = () => {
     setSecondaryCtaLabel(sec.secondaryCta?.label || '');
     setSecondaryCtaHref(sec.secondaryCta?.href || '');
     setIsVisible(sec.isVisible ?? true);
+    setFieldErrors({});
+    setFormError('');
   };
 
   return (
@@ -248,30 +260,45 @@ export const CmsSectionsList: React.FC = () => {
           }}
           className="space-y-4"
         >
+          {formError && (
+            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs">
+              {formError}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Eyebrow Kicker">
+            <FormField label="Eyebrow Kicker" error={getFieldError(fieldErrors, 'eyebrow')}>
               <Input
                 placeholder="e.g. AUTUMN / WINTER 2026"
                 value={eyebrow}
-                onChange={(e) => setEyebrow(e.target.value)}
+                onChange={(e) => {
+                  setEyebrow(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'eyebrow'));
+                }}
               />
             </FormField>
 
-            <FormField label="Main Headline / Title">
+            <FormField label="Main Headline / Title" error={getFieldError(fieldErrors, 'title')}>
               <Input
                 placeholder="e.g. ARCHITECTURAL LEATHER OUTERWEAR"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'title'));
+                }}
               />
             </FormField>
           </div>
 
-          <FormField label="Subtitle / Narrative">
+          <FormField label="Subtitle / Narrative" error={getFieldError(fieldErrors, 'subtitle')}>
             <Textarea
               rows={3}
               placeholder="Section narrative or description..."
               value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
+              onChange={(e) => {
+                setSubtitle(e.target.value);
+                setFieldErrors((prev) => clearFieldError(prev, 'subtitle'));
+              }}
             />
           </FormField>
 
@@ -282,13 +309,19 @@ export const CmsSectionsList: React.FC = () => {
               <Input
                 placeholder="Button Label (e.g. EXPLORE COLLECTION)"
                 value={primaryCtaLabel}
-                onChange={(e) => setPrimaryCtaLabel(e.target.value)}
+                onChange={(e) => {
+                  setPrimaryCtaLabel(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'primaryCta.label', 'primaryCtaLabel'));
+                }}
                 className="text-xs"
               />
               <Input
                 placeholder="Button Link (e.g. /shop)"
                 value={primaryCtaHref}
-                onChange={(e) => setPrimaryCtaHref(e.target.value)}
+                onChange={(e) => {
+                  setPrimaryCtaHref(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'primaryCta.href', 'primaryCtaHref'));
+                }}
                 className="text-xs"
               />
             </div>
@@ -301,24 +334,33 @@ export const CmsSectionsList: React.FC = () => {
               <Input
                 placeholder="Button Label (e.g. BESPOKE ATELIER)"
                 value={secondaryCtaLabel}
-                onChange={(e) => setSecondaryCtaLabel(e.target.value)}
+                onChange={(e) => {
+                  setSecondaryCtaLabel(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'secondaryCta.label', 'secondaryCtaLabel'));
+                }}
                 className="text-xs"
               />
               <Input
                 placeholder="Button Link (e.g. /customize)"
                 value={secondaryCtaHref}
-                onChange={(e) => setSecondaryCtaHref(e.target.value)}
+                onChange={(e) => {
+                  setSecondaryCtaHref(e.target.value);
+                  setFieldErrors((prev) => clearFieldError(prev, 'secondaryCta.href', 'secondaryCtaHref'));
+                }}
                 className="text-xs"
               />
             </div>
           </div>
 
           {/* Media URL */}
-          <FormField label="Primary Image URL">
+          <FormField label="Primary Image URL" error={getFieldError(fieldErrors, 'mediaUrl', 'media_url')}>
             <ImageUploader
               folder="editorial"
               value={mediaUrl}
-              onChange={setMediaUrl}
+              onChange={(url) => {
+                setMediaUrl(url);
+                setFieldErrors((prev) => clearFieldError(prev, 'mediaUrl', 'media_url'));
+              }}
             />
           </FormField>
 

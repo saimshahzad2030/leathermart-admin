@@ -5,6 +5,9 @@ export interface ProductQueryParams {
   page?: number;
   limit?: number;
   status?: 'published' | 'draft' | 'all';
+  in_stock?: boolean | string;
+  isInStock?: boolean | string;
+  is_in_stock?: boolean | string;
   category?: string;
   gender?: 'men' | 'women' | 'unisex' | 'all';
   search?: string;
@@ -70,5 +73,16 @@ export const productsApi = {
 
   reorderProducts: async (items: Array<{ id: string; order: number }>): Promise<void> => {
     await apiClient.put<ApiResponse<null>>('/admin/products/reorder', { items });
+  },
+
+  uploadImage: async (file: File): Promise<{ url: string; id?: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.post<ApiResponse<{ url: string; id?: string }>>('/admin/products/images/upload', formData, {
+      headers: {
+        'Content-Type': undefined,
+      },
+    });
+    return res.data.data;
   },
 };
