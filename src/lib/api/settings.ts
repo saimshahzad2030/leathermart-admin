@@ -1,8 +1,23 @@
 import axios from 'axios';
 import { apiClient, API_BASE_URL } from './client';
-import { ApiResponse, SiteSetting, MegaMenuPayload, SystemHealth } from '@/types';
+import { ApiResponse, SiteSetting, PlatformBranding, MegaMenuPayload, SystemHealth } from '@/types';
 
 export const settingsApi = {
+  getBranding: async (): Promise<PlatformBranding> => {
+    const res = await apiClient.get<ApiResponse<PlatformBranding>>('/admin/settings/branding');
+    return res.data.data;
+  },
+
+  getPublicBranding: async (): Promise<PlatformBranding> => {
+    const res = await apiClient.get<ApiResponse<PlatformBranding>>('/settings/branding');
+    return res.data.data;
+  },
+
+  updateBranding: async (payload: Partial<PlatformBranding>): Promise<PlatformBranding> => {
+    const res = await apiClient.patch<ApiResponse<PlatformBranding>>('/admin/settings/branding', payload);
+    return res.data.data;
+  },
+
   getSettings: async (): Promise<SiteSetting> => {
     const res = await apiClient.get<ApiResponse<SiteSetting>>('/admin/settings');
     return res.data.data;

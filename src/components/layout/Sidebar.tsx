@@ -1,6 +1,8 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useBranding } from '@/context/BrandingContext';
+import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -49,7 +51,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const { user, hasRole } = useAuth();
+  const { branding } = useBranding();
+  const { effectiveTheme } = useTheme();
   const location = useLocation();
+
+  const activeLogo = effectiveTheme === 'light'
+    ? (branding.logoLightUrl || branding.logoUrl)
+    : (branding.logoDarkUrl || branding.logoUrl);
+
+  const fallbackInitials = (
+    branding.platformShortName ||
+    (branding.platformName ? branding.platformName.trim().slice(0, 2).toUpperCase() : 'AV')
+  );
 
   const navigationSections: NavSection[] = [
     {
@@ -101,13 +114,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Header */}
       <div className="h-16 px-4 flex items-center justify-between border-b border-theme shrink-0">
         <NavLink to="/" className="flex items-center gap-3 overflow-hidden">
-          <div className="w-9 h-9 rounded-xl bg-zinc-950 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-sm">
-            <span className="font-serif-luxury font-bold text-amber-500 text-base">AV</span>
-          </div>
+          {activeLogo ? (
+            <div className="w-9 h-9 rounded-xl bg-surface-subtle border border-theme flex items-center justify-center shrink-0 shadow-xs overflow-hidden p-1">
+              <img
+                src={activeLogo}
+                alt={branding.platformName || 'Brand Logo'}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  // Fallback to text initials if image fails
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="w-9 h-9 rounded-xl bg-zinc-950 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-xs">
+              <span className="font-serif-luxury font-bold text-amber-500 text-sm">
+                {fallbackInitials}
+              </span>
+            </div>
+          )}
           {!isCollapsed && (
             <div className="flex flex-col truncate">
               <span className="font-serif-luxury font-bold text-sm tracking-wider text-primary truncate">
-                VALENTI MILANO
+                {(branding.platformName || 'Atelier Valenti Milano').toUpperCase()}
               </span>
               <span className="text-[10px] tracking-widest text-muted uppercase font-mono">
                 Executive Admin

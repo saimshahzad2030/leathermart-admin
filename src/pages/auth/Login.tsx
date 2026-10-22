@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useBranding } from '@/context/BrandingContext';
 import { useToast } from '@/context/ToastContext';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/forms/Input';
@@ -12,6 +13,7 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const { branding } = useBranding();
   const toast = useToast();
 
   const [email, setEmail] = useState('');
@@ -76,11 +78,24 @@ export const Login: React.FC = () => {
       <div className="relative w-full max-w-md rounded-3xl bg-surface border border-theme p-8 sm:p-10 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-200">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-amber-500/40 flex items-center justify-center mb-4 shadow-md">
-            <span className="font-serif-luxury font-bold text-amber-500 text-2xl">AV</span>
+          <div className="w-16 h-16 rounded-2xl bg-zinc-950 border border-amber-500/40 flex items-center justify-center mb-4 shadow-md overflow-hidden p-2">
+            {branding.logoDarkUrl || branding.logoUrl ? (
+              <img
+                src={branding.logoDarkUrl || branding.logoUrl!}
+                alt={branding.platformName || 'Platform Logo'}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <span className="font-serif-luxury font-bold text-amber-500 text-2xl">
+                {branding.platformShortName || (branding.platformName ? branding.platformName.trim().slice(0, 2).toUpperCase() : 'AV')}
+              </span>
+            )}
           </div>
           <h2 className="text-xl sm:text-2xl font-bold font-serif-luxury text-primary tracking-wide">
-            ATELIER VALENTI MILANO
+            {(branding.platformName || 'Atelier Valenti Milano').toUpperCase()}
           </h2>
           <p className="text-xs text-muted uppercase tracking-widest font-mono mt-1">
             Executive Administration Console

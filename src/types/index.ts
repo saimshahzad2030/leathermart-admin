@@ -387,10 +387,31 @@ export interface MediaAsset {
   createdAt: string;
 }
 
+// Platform Branding
+export interface PlatformBranding {
+  platformName: string;
+  platformShortName: string | null;
+  logoUrl: string | null;
+  logoDarkUrl: string | null;
+  logoLightUrl: string | null;
+  faviconUrl: string | null;
+  browserTitle: string;
+  metaDescription: string | null;
+  updatedAt?: string;
+}
+
 // Global Site Settings
 export interface SiteSetting {
   id: string;
   _id?: string;
+  platformName?: string;
+  platformShortName?: string | null;
+  logoUrl?: string | null;
+  logoDarkUrl?: string | null;
+  logoLightUrl?: string | null;
+  faviconUrl?: string | null;
+  browserTitle?: string;
+  metaDescription?: string | null;
   announcement: {
     enabled: boolean;
     badge: string;

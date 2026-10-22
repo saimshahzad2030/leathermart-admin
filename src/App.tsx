@@ -5,6 +5,7 @@ import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { BrandingProvider } from '@/context/BrandingContext';
 
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { RoleRoute } from '@/components/layout/RoleRoute';
@@ -33,6 +34,7 @@ export const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ToastProvider>
+        <BrandingProvider>
           <AuthProvider>
             <BrowserRouter>
               <Routes>
@@ -71,7 +73,8 @@ export const App: React.FC = () => {
               </Routes>
             </BrowserRouter>
           </AuthProvider>
-        </ToastProvider>
+                </BrandingProvider>
+      </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
