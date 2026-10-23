@@ -400,6 +400,26 @@ export interface PlatformBranding {
   updatedAt?: string;
 }
 
+export interface FooterLink {
+  label: string;
+  href: string;
+}
+
+export interface FooterColumn {
+  title: string;
+  links: FooterLink[];
+}
+
+export interface FooterSettings {
+  certificationLine?: string | null;
+  atelierAddress?: string | null;
+  instagramHandle?: string | null;
+  copyrightText?: string | null;
+  cities?: string[];
+  columns: FooterColumn[];
+  socialLinks?: Record<string, string> | null;
+}
+
 // Global Site Settings
 export interface SiteSetting {
   id: string;
@@ -430,17 +450,7 @@ export interface SiteSetting {
       days: string;
     }>;
   };
-  footer: {
-    certificationLine: string;
-    atelierAddress: string;
-    instagramHandle: string;
-    copyrightText: string;
-    cities: string[];
-    columns: Array<{
-      title: string;
-      links: Array<{ label: string; href: string }>;
-    }>;
-  };
+  footer: FooterSettings;
   searchKeywords: string[];
 }
 

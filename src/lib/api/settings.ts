@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { apiClient, API_BASE_URL } from './client';
-import { ApiResponse, SiteSetting, PlatformBranding, MegaMenuPayload, SystemHealth } from '@/types';
+import { ApiResponse, SiteSetting, PlatformBranding, MegaMenuPayload, SystemHealth, FooterSettings } from '@/types';
 
 export const settingsApi = {
   getBranding: async (): Promise<PlatformBranding> => {
@@ -40,6 +40,16 @@ export const settingsApi = {
 
   updateNavigationMenu: async (menuKey: string, payload: MegaMenuPayload): Promise<any> => {
     const res = await apiClient.put<ApiResponse<any>>(`/admin/navigation/mega-menu/${menuKey}`, { payload });
+    return res.data.data;
+  },
+
+  getFooterSettings: async (): Promise<FooterSettings> => {
+    const res = await apiClient.get<ApiResponse<FooterSettings>>('/settings/footer');
+    return res.data.data;
+  },
+
+  updateFooterSettings: async (payload: Partial<FooterSettings>): Promise<FooterSettings> => {
+    const res = await apiClient.put<ApiResponse<FooterSettings>>('/settings/footer', payload);
     return res.data.data;
   },
 

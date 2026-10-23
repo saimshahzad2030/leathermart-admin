@@ -12,6 +12,7 @@ import { FormField } from '@/components/forms/FormField';
 import { useToast } from '@/context/ToastContext';
 import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import { PlatformBrandingTab } from './components/PlatformBrandingTab';
+import { FooterSettingsTab } from './components/FooterSettingsTab';
 import {
   Sparkles,
   BellRing,
@@ -30,6 +31,7 @@ export const SettingsPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'branding' | 'announcement' | 'shipping' | 'footer' | 'search'>('branding');
   const [isBrandingDirty, setIsBrandingDirty] = useState(false);
+  const [isFooterDirty, setIsFooterDirty] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState('');
 
@@ -65,12 +67,6 @@ export const SettingsPage: React.FC = () => {
   const [standardShippingCost, setStandardShippingCost] = useState<number>(15);
   const [countries, setCountries] = useState<Array<{ code: string; name: string; rate: number; days: string }>>([]);
 
-  // Footer state
-  const [certificationLine, setCertificationLine] = useState('');
-  const [atelierAddress, setAtelierAddress] = useState('');
-  const [instagramHandle, setInstagramHandle] = useState('@ATELIERVALENTI');
-  const [copyrightText, setCopyrightText] = useState('');
-
   // Search Keywords state
   const [keywords, setKeywords] = useState<string[]>([]);
   const [newKeyword, setNewKeyword] = useState('');
@@ -91,19 +87,13 @@ export const SettingsPage: React.FC = () => {
         setStandardShippingCost(settings.shipping.standardShippingCost || 15);
         setCountries(settings.shipping.countries || []);
       }
-      if (settings.footer) {
-        setCertificationLine(settings.footer.certificationLine || '');
-        setAtelierAddress(settings.footer.atelierAddress || '');
-        setInstagramHandle(settings.footer.instagramHandle || '');
-        setCopyrightText(settings.footer.copyrightText || '');
-      }
       if (settings.searchKeywords) {
         setKeywords(settings.searchKeywords);
       }
     }
   }, [settings]);
 
-  // Save Settings Mutation (for announcement, shipping, footer)
+  // Save Settings Mutation (for announcement and shipping)
   const saveSettingsMutation = useMutation({
     mutationFn: async () => {
       const payload: Partial<SiteSetting> = {
@@ -119,14 +109,6 @@ export const SettingsPage: React.FC = () => {
           freeShippingThreshold: Number(freeShippingThreshold),
           standardShippingCost: Number(standardShippingCost),
           countries,
-        },
-        footer: {
-          certificationLine,
-          atelierAddress,
-          instagramHandle,
-          copyrightText,
-          cities: settings?.footer?.cities || ['MILANO', 'PARIS', 'ZURICH'],
-          columns: settings?.footer?.columns || [],
         },
       };
 
@@ -180,6 +162,12 @@ export const SettingsPage: React.FC = () => {
       );
       if (!confirmLeave) return;
     }
+    if (activeTab === 'footer' && tab !== 'footer' && isFooterDirty) {
+      const confirmLeave = window.confirm(
+        'You have unsaved changes in Footer Settings. Are you sure you want to discard them and leave this tab?'
+      );
+      if (!confirmLeave) return;
+    }
     setActiveTab(tab);
     setFormError('');
   };
@@ -203,13 +191,14 @@ export const SettingsPage: React.FC = () => {
                 refetchSettings(),
                 refetchMenus(),
                 queryClient.invalidateQueries({ queryKey: ['admin-branding'] }),
+                queryClient.invalidateQueries({ queryKey: ['admin-footer'] }),
               ]);
             }}
             isRefreshing={isSettingsFetching || isMenusFetching}
             title="Refresh store configuration"
           />
 
-          {activeTab !== 'branding' && (
+          {activeTab !== 'branding' && activeTab !== 'footer' && (
             <Button
               variant="primary"
               size="md"
@@ -243,6 +232,7 @@ export const SettingsPage: React.FC = () => {
           <Sparkles className="w-4 h-4" />
           Platform Branding
         </button>
+
         <button
           onClick={() => handleTabChange('announcement')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
@@ -276,7 +266,7 @@ export const SettingsPage: React.FC = () => {
           }`}
         >
           <Footprints className="w-4 h-4" />
-          Footer & Certifications
+          Footer & Navigation
         </button>
 
         <button
@@ -304,7 +294,11 @@ export const SettingsPage: React.FC = () => {
         <PlatformBrandingTab onDirtyChange={setIsBrandingDirty} />
       )}
 
-      {isLoading && activeTab !== 'branding' ? (
+      {activeTab === 'footer' && (
+        <FooterSettingsTab onDirtyChange={setIsFooterDirty} />
+      )}
+
+      {isLoading && activeTab !== 'branding' && activeTab !== 'footer' ? (
         <FormSettingsSkeleton />
       ) : (
         <>
@@ -491,55 +485,6 @@ export const SettingsPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Tab: Footer & Certifications */}
-          {activeTab === 'footer' && (
-            <div className="p-6 rounded-2xl bg-surface border border-theme shadow-xs space-y-4 max-w-2xl">
-              <FormField label="EU Compliance & Certification Line" error={getFieldError(fieldErrors, 'certificationLine', 'certification_line', 'footer.certificationLine')}>
-                <Input
-                  placeholder="e.g. ✔️ AZO-Free Leather · ✔️ EU REACH Compliant"
-                  value={certificationLine}
-                  onChange={(e) => {
-                    setCertificationLine(e.target.value);
-                    setFieldErrors((prev) => clearFieldError(prev, 'certificationLine', 'certification_line', 'footer.certificationLine'));
-                  }}
-                />
-              </FormField>
-
-              <FormField label="Milan Atelier Flagship Address" error={getFieldError(fieldErrors, 'atelierAddress', 'atelier_address', 'footer.atelierAddress')}>
-                <Input
-                  placeholder="e.g. Via Montenapoleone, 27, 20121 Milano, Italy"
-                  value={atelierAddress}
-                  onChange={(e) => {
-                    setAtelierAddress(e.target.value);
-                    setFieldErrors((prev) => clearFieldError(prev, 'atelierAddress', 'atelier_address', 'footer.atelierAddress'));
-                  }}
-                />
-              </FormField>
-
-              <FormField label="Official Instagram Handle" error={getFieldError(fieldErrors, 'instagramHandle', 'instagram_handle', 'footer.instagramHandle')}>
-                <Input
-                  placeholder="@ATELIERVALENTI"
-                  value={instagramHandle}
-                  onChange={(e) => {
-                    setInstagramHandle(e.target.value);
-                    setFieldErrors((prev) => clearFieldError(prev, 'instagramHandle', 'instagram_handle', 'footer.instagramHandle'));
-                  }}
-                />
-              </FormField>
-
-              <FormField label="Copyright Notice" error={getFieldError(fieldErrors, 'copyrightText', 'copyright_text', 'footer.copyrightText')}>
-                <Input
-                  placeholder="© 2026 Atelier Valenti Milano. All rights reserved."
-                  value={copyrightText}
-                  onChange={(e) => {
-                    setCopyrightText(e.target.value);
-                    setFieldErrors((prev) => clearFieldError(prev, 'copyrightText', 'copyright_text', 'footer.copyrightText'));
-                  }}
-                />
-              </FormField>
             </div>
           )}
 
