@@ -1,8 +1,23 @@
 import axios from 'axios';
 import { apiClient, API_BASE_URL } from './client';
-import { ApiResponse, SiteSetting, MegaMenuPayload, SystemHealth } from '@/types';
+import { ApiResponse, SiteSetting, PlatformBranding, MegaMenuPayload, SystemHealth, FooterSettings } from '@/types';
 
 export const settingsApi = {
+  getBranding: async (): Promise<PlatformBranding> => {
+    const res = await apiClient.get<ApiResponse<PlatformBranding>>('/admin/settings/branding');
+    return res.data.data;
+  },
+
+  getPublicBranding: async (): Promise<PlatformBranding> => {
+    const res = await apiClient.get<ApiResponse<PlatformBranding>>('/settings/branding');
+    return res.data.data;
+  },
+
+  updateBranding: async (payload: Partial<PlatformBranding>): Promise<PlatformBranding> => {
+    const res = await apiClient.patch<ApiResponse<PlatformBranding>>('/admin/settings/branding', payload);
+    return res.data.data;
+  },
+
   getSettings: async (): Promise<SiteSetting> => {
     const res = await apiClient.get<ApiResponse<SiteSetting>>('/admin/settings');
     return res.data.data;
@@ -25,6 +40,16 @@ export const settingsApi = {
 
   updateNavigationMenu: async (menuKey: string, payload: MegaMenuPayload): Promise<any> => {
     const res = await apiClient.put<ApiResponse<any>>(`/admin/navigation/mega-menu/${menuKey}`, { payload });
+    return res.data.data;
+  },
+
+  getFooterSettings: async (): Promise<FooterSettings> => {
+    const res = await apiClient.get<ApiResponse<FooterSettings>>('/settings/footer');
+    return res.data.data;
+  },
+
+  updateFooterSettings: async (payload: Partial<FooterSettings>): Promise<FooterSettings> => {
+    const res = await apiClient.put<ApiResponse<FooterSettings>>('/settings/footer', payload);
     return res.data.data;
   },
 

@@ -58,11 +58,18 @@ export const Badge: React.FC<BadgeProps> = ({
 
 export const StatusBadge: React.FC<{ status: string; className?: string }> = ({ status, className }) => {
   switch (status.toLowerCase()) {
+    case 'resolved':
     case 'published':
     case 'active':
     case 'completed':
     case 'approved':
       return <Badge variant="emerald" dot className={className}>{status}</Badge>;
+    case 'new':
+      return <Badge variant="sky" dot className={className}>New</Badge>;
+    case 'in_progress':
+      return <Badge variant="amber" dot className={className}>In Progress</Badge>;
+    case 'spam':
+      return <Badge variant="rose" className={className}>Spam</Badge>;
     case 'draft':
     case 'pending':
       return <Badge variant="amber" dot className={className}>{status}</Badge>;

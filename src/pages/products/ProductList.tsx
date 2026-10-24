@@ -11,8 +11,12 @@ import { RefreshButton } from '@/components/common/RefreshButton';
 import { Input } from '@/components/forms/Input';
 import { Select } from '@/components/forms/Select';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { ManageSizesModal } from '@/components/modals/ManageSizesModal';
+import { ManageColorsModal } from '@/components/modals/ManageColorsModal';
+import { ManagePoliciesModal } from '@/components/modals/ManagePoliciesModal';
 import { useToast } from '@/context/ToastContext';
 import { formatCurrency } from '@/lib/utils';
+import { parseApiError } from '@/lib/apiErrors';
 import {
   Plus,
   Search,
@@ -24,6 +28,9 @@ import {
   Star,
   RotateCcw,
   Loader2,
+  Ruler,
+  Palette,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const ProductList: React.FC = () => {
@@ -31,11 +38,18 @@ export const ProductList: React.FC = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
 
+  // Modals state
+  const [isSizesModalOpen, setIsSizesModalOpen] = useState(false);
+  const [isColorsModalOpen, setIsColorsModalOpen] = useState(false);
+  const [isPoliciesModalOpen, setIsPoliciesModalOpen] = useState(false);
+
   // Query parameters state
   const [queryParams, setQueryParams] = useState<ProductQueryParams>({
     page: 1,
     limit: 12,
     status: 'all',
+      in_stock: undefined,
+      isInStock: undefined,
     category: '',
     gender: 'all',
     search: '',
@@ -75,7 +89,7 @@ export const ProductList: React.FC = () => {
       toast.success(`Product status switched to ${data.isPublished ? 'Published' : 'Draft'}.`);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to toggle product status.');
+      toast.error(parseApiError(err, 'Failed to toggle product status.').message);
     },
   });
 
@@ -88,7 +102,7 @@ export const ProductList: React.FC = () => {
       toast.success(`Product duplicated as draft: ${newProduct.sku}`);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to duplicate product.');
+      toast.error(parseApiError(err, 'Failed to duplicate product.').message);
     },
   });
 
@@ -102,7 +116,7 @@ export const ProductList: React.FC = () => {
       setDeleteProductTarget(null);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to delete product.');
+      toast.error(parseApiError(err, 'Failed to delete product.').message);
     },
   });
 
@@ -118,7 +132,7 @@ export const ProductList: React.FC = () => {
       setBulkDeleteConfirmOpen(false);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to execute bulk action.');
+      toast.error(parseApiError(err, 'Failed to execute bulk action.').message);
     },
   });
 
@@ -143,6 +157,7 @@ export const ProductList: React.FC = () => {
   const hasActiveFilters =
     Boolean(queryParams.search) ||
     queryParams.status !== 'all' ||
+    queryParams.in_stock !== undefined ||
     Boolean(queryParams.category) ||
     queryParams.gender !== 'all' ||
     queryParams.sort !== 'newest';
@@ -212,19 +227,54 @@ export const ProductList: React.FC = () => {
     },
     {
       key: 'price',
-      header: 'Price (EUR)',
-      render: (item) => (
-        <div className="flex flex-col">
-          <span className="font-mono font-bold text-primary whitespace-nowrap">
-            {formatCurrency(item.price)}
-          </span>
-          {item.salePrice && (
-            <span className="text-[11px] font-mono text-emerald-500 line-through whitespace-nowrap">
-              {formatCurrency(item.salePrice)}
+      header: 'Pricing',
+      render: (item) => {
+        const pkPrice = item.regionalPrices?.find((p) => p.regionCode === 'PK');
+        const itPrice = item.regionalPrices?.find((p) => p.regionCode === 'IT');
+
+        return (
+          <div className="flex flex-col space-y-0.5">
+            <span className="font-mono font-bold text-primary whitespace-nowrap">
+              {formatCurrency(item.price, item.currency || item.resolvedPrice?.currency || 'EUR')}
             </span>
-          )}
-        </div>
-      ),
+            {item.salePrice && (
+              <span className="text-[11px] font-mono text-emerald-500 line-through whitespace-nowrap">
+                {formatCurrency(item.salePrice, item.currency || item.resolvedPrice?.currency || 'EUR')}
+              </span>
+            )}
+            <div className="flex items-center gap-1 flex-wrap pt-0.5">
+              {pkPrice && (
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-surface-subtle text-muted border border-theme" title="Pakistan Price">
+                  PK: Rs. {Number(pkPrice.price).toLocaleString()}
+                </span>
+              )}
+              {itPrice && (
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-surface-subtle text-muted border border-theme" title="Italy Price">
+                  IT: €{Number(itPrice.price).toLocaleString()}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'availability',
+      header: 'Availability',
+      render: (item) => {
+        const isInStock = item.isInStock !== undefined ? item.isInStock : (item.inStock !== false);
+        return (
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap ${
+              isInStock
+                ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+            }`}
+          >
+            {isInStock ? 'In Stock' : 'Out of Stock'}
+          </span>
+        );
+      },
     },
     {
       key: 'status',
@@ -326,7 +376,37 @@ export const ProductList: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-wrap">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            onClick={() => setIsSizesModalOpen(true)}
+            leftIcon={<Ruler className="w-4 h-4 text-amber-500" />}
+          >
+            Sizes
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            onClick={() => setIsColorsModalOpen(true)}
+            leftIcon={<Palette className="w-4 h-4 text-amber-500" />}
+          >
+            Colors
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            onClick={() => setIsPoliciesModalOpen(true)}
+            leftIcon={<ShieldCheck className="w-4 h-4 text-amber-500" />}
+          >
+            Policies
+          </Button>
+
           <RefreshButton
             onRefresh={() => refetch()}
             isRefreshing={isFetching}
@@ -371,6 +451,25 @@ export const ProductList: React.FC = () => {
               <option value="all">All Status</option>
               <option value="published">Published</option>
               <option value="draft">Draft</option>
+            </Select>
+
+            {/* Stock Availability Filter */}
+            <Select
+              value={queryParams.in_stock !== undefined ? String(queryParams.in_stock) : 'all'}
+              onChange={(e) => {
+                const val = e.target.value;
+                setQueryParams((prev) => ({
+                  ...prev,
+                  in_stock: val === 'all' ? undefined : (val === 'true' ? true : false),
+                  isInStock: val === 'all' ? undefined : (val === 'true' ? true : false),
+                  page: 1,
+                }));
+              }}
+              wrapperClassName="w-full lg:w-36"
+            >
+              <option value="all">All Stock Status</option>
+              <option value="true">In Stock</option>
+              <option value="false">Out of Stock</option>
             </Select>
 
             {/* Category Filter */}
@@ -523,6 +622,24 @@ export const ProductList: React.FC = () => {
         message={`Are you sure you want to permanently delete ${selectedIds.length} selected garments from the catalogue? This action cannot be undone.`}
         confirmText={`Delete ${selectedIds.length} Garments`}
         isLoading={bulkActionMutation.isPending}
+      />
+      {/* Master Catalogs Management Modals */}
+      <ManageSizesModal
+        isOpen={isSizesModalOpen}
+        onClose={() => setIsSizesModalOpen(false)}
+        onSizesUpdated={() => refetch()}
+      />
+
+      <ManageColorsModal
+        isOpen={isColorsModalOpen}
+        onClose={() => setIsColorsModalOpen(false)}
+        onColorsUpdated={() => refetch()}
+      />
+
+      <ManagePoliciesModal
+        isOpen={isPoliciesModalOpen}
+        onClose={() => setIsPoliciesModalOpen(false)}
+        onPoliciesUpdated={() => refetch()}
       />
     </div>
   );

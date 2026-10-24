@@ -22,14 +22,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className={cn(
             'w-full bg-surface border border-theme rounded-xl px-3.5 py-2.5 text-sm text-primary placeholder:text-muted/60 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 disabled:opacity-50 disabled:bg-surface-subtle',
             leftIcon && 'pl-10',
-            rightIcon && 'pr-10',
+            rightIcon && 'pr-16',
             error && 'border-rose-500 focus:ring-rose-500/20 focus:border-rose-500',
             className
           )}
           {...props}
         />
         {rightIcon && (
-          <div className="absolute right-3.5 text-muted flex items-center">
+          <div className="absolute right-3 text-muted flex items-center pointer-events-none">
             {rightIcon}
           </div>
         )}

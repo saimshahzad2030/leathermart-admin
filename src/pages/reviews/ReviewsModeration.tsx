@@ -10,6 +10,7 @@ import { Select } from '@/components/forms/Select';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useToast } from '@/context/ToastContext';
 import { formatDate } from '@/lib/utils';
+import { parseApiError } from '@/lib/apiErrors';
 import { Star, CheckCircle, XCircle, Trash2, ShieldCheck, MapPin } from 'lucide-react';
 
 export const ReviewsModeration: React.FC = () => {
@@ -47,7 +48,9 @@ export const ReviewsModeration: React.FC = () => {
           : 'Review marked as pending moderation.'
       );
     },
-    onError: () => toast.error('Failed to update review status.'),
+    onError: (err: any) => {
+      toast.error(parseApiError(err, 'Failed to update review status.').message);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -58,7 +61,9 @@ export const ReviewsModeration: React.FC = () => {
       toast.success('Review permanently deleted.');
       setDeleteTarget(null);
     },
-    onError: () => toast.error('Failed to delete review.'),
+    onError: (err: any) => {
+      toast.error(parseApiError(err, 'Failed to delete review.').message);
+    },
   });
 
   const columns: Column<ProductReview>[] = [

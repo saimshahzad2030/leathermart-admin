@@ -5,6 +5,7 @@ import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { BrandingProvider } from '@/context/BrandingContext';
 
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { RoleRoute } from '@/components/layout/RoleRoute';
@@ -17,6 +18,7 @@ import { ProductForm } from '@/pages/products/ProductForm';
 import { ReviewsModeration } from '@/pages/reviews/ReviewsModeration';
 import { CategoriesList } from '@/pages/categories/CategoriesList';
 import { CommissionList } from '@/pages/commissions/CommissionList';
+import { ContactMessagesList } from '@/pages/contact-messages/ContactMessagesList';
 import { BespokeStudioOptions } from '@/pages/bespoke-studio/BespokeStudioOptions';
 import { CmsSectionsList } from '@/pages/cms/CmsSectionsList';
 import { TestimonialsList } from '@/pages/cms/TestimonialsList';
@@ -32,6 +34,7 @@ export const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ToastProvider>
+        <BrandingProvider>
           <AuthProvider>
             <BrowserRouter>
               <Routes>
@@ -47,6 +50,7 @@ export const App: React.FC = () => {
                     <Route path="/products/edit/:id" element={<ProductForm />} />
                     <Route path="/reviews" element={<ReviewsModeration />} />
                     <Route path="/categories" element={<CategoriesList />} />
+                    <Route path="/contact-messages" element={<ContactMessagesList />} />
                     <Route path="/commissions" element={<CommissionList />} />
                     <Route path="/bespoke-studio" element={<BespokeStudioOptions />} />
                     <Route path="/cms" element={<CmsSectionsList />} />
@@ -69,7 +73,8 @@ export const App: React.FC = () => {
               </Routes>
             </BrowserRouter>
           </AuthProvider>
-        </ToastProvider>
+                </BrandingProvider>
+      </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

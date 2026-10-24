@@ -14,6 +14,7 @@ import { Button } from '@/components/common/Button';
 import { RefreshButton } from '@/components/common/RefreshButton';
 import { CardSkeleton, ListSkeleton } from '@/components/common/Skeleton';
 import { useToast } from '@/context/ToastContext';
+import { parseApiError } from '@/lib/apiErrors';
 import {
   Layers,
   FileText,
@@ -141,7 +142,9 @@ export const Dashboard: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products-draft'] });
       toast.success(`Product is now ${data.isPublished ? 'Published' : 'Draft'}.`);
     },
-    onError: () => toast.error('Failed to change product status.'),
+    onError: (err: any) => {
+      toast.error(parseApiError(err, 'Failed to change product status.').message);
+    },
   });
 
   const stats = [

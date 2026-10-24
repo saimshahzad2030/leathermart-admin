@@ -10,9 +10,10 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  envPrefix: ['VITE_', 'API_'],
   server: {
     port: 3001,
     host: true,

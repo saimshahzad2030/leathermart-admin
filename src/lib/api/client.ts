@@ -1,20 +1,22 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ApiResponse } from '@/types';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL;
-export const API_REFRESH_URL = import.meta.env.VITE_API_REFRESH_URL;
+const rawApiUrl = (import.meta.env.VITE_API_URL || import.meta.env.API_URL || '').trim();
+const rawRefreshUrl = (import.meta.env.VITE_API_REFRESH_URL || import.meta.env.API_REFRESH_URL || '').trim();
 
-if (!API_BASE_URL) {
+if (!rawApiUrl) {
   throw new Error(
-    'Missing required environment variable: VITE_API_URL. Please define VITE_API_URL in your environment configuration.'
+    'Missing required environment variable: API_URL (or VITE_API_URL). Please define API_URL in your environment configuration.'
   );
 }
 
-if (!API_REFRESH_URL) {
-  throw new Error(
-    'Missing required environment variable: VITE_API_REFRESH_URL. Please define VITE_API_REFRESH_URL in your environment configuration.'
-  );
-}
+// Normalize base URL by removing any trailing slashes
+export const API_BASE_URL: string = rawApiUrl.replace(/\/+$/, '');
+
+// Normalize refresh URL, deriving from API_BASE_URL if not explicitly specified
+export const API_REFRESH_URL: string = (
+  rawRefreshUrl || `${API_BASE_URL}/admin/auth/refresh`
+).replace(/\/+$/, '');
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -30,6 +32,10 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem('atelier_token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    // Remove Content-Type if uploading FormData so browser / axios can set multipart boundary
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type'];
     }
     return config;
   },
