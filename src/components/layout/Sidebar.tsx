@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useBranding } from '@/context/BrandingContext';
@@ -55,14 +55,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { effectiveTheme } = useTheme();
   const location = useLocation();
 
+  const [logoError, setLogoError] = useState(false);
+
   const activeLogo = effectiveTheme === 'light'
     ? (branding.logoLightUrl || branding.logoUrl)
     : (branding.logoDarkUrl || branding.logoUrl);
-
-  const fallbackInitials = (
-    branding.platformShortName ||
-    (branding.platformName ? branding.platformName.trim().slice(0, 2).toUpperCase() : 'AV')
-  );
 
   const navigationSections: NavSection[] = [
     {
@@ -114,30 +111,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Header */}
       <div className="h-16 px-4 flex items-center justify-between border-b border-theme shrink-0">
         <NavLink to="/" className="flex items-center gap-3 overflow-hidden">
-          {activeLogo ? (
+          {activeLogo && !logoError ? (
             <div className="w-9 h-9 rounded-xl bg-surface-subtle border border-theme flex items-center justify-center shrink-0 shadow-xs overflow-hidden p-1">
               <img
                 src={activeLogo}
                 alt={branding.platformName || 'Brand Logo'}
                 className="w-full h-full object-contain"
-                onError={(e) => {
-                  // Fallback to text initials if image fails
-                  (e.currentTarget as HTMLElement).style.display = 'none';
-                }}
+                onError={() => setLogoError(true)}
               />
+            </div>
+          ) : branding.platformShortName ? (
+            <div className="w-9 h-9 rounded-xl bg-zinc-950 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-xs">
+              <span className="font-serif-luxury font-bold text-amber-500 text-sm">
+                {branding.platformShortName}
+              </span>
             </div>
           ) : (
             <div className="w-9 h-9 rounded-xl bg-zinc-950 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-xs">
-              <span className="font-serif-luxury font-bold text-amber-500 text-sm">
-                {fallbackInitials}
-              </span>
+              <ShieldCheck className="w-5 h-5 text-amber-500" />
             </div>
           )}
           {!isCollapsed && (
             <div className="flex flex-col truncate">
-              <span className="font-serif-luxury font-bold text-sm tracking-wider text-primary truncate">
-                {(branding.platformName || 'Atelier Valenti Milano').toUpperCase()}
-              </span>
+              {branding.platformName ? (
+                <span className="font-serif-luxury font-bold text-sm tracking-wider text-primary truncate">
+                  {branding.platformName.toUpperCase()}
+                </span>
+              ) : null}
               <span className="text-[10px] tracking-widest text-muted uppercase font-mono">
                 Executive Admin
               </span>

@@ -359,7 +359,7 @@ export const ProductForm: React.FC = () => {
 
   const removeVariant = (index: number) => {
     if (variants.length <= 1) {
-      toast.error( 'Every product must have at least one variant configuration');
+      toast.error('Every product must have at least one variant configuration');
       return;
     }
     setVariants(variants.filter((_, i) => i !== index));
@@ -424,7 +424,7 @@ export const ProductForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.error( 'Please resolve highlighted validation errors before saving');
+      toast.error('Please resolve highlighted validation errors before saving');
       return;
     }
 
@@ -436,14 +436,14 @@ export const ProductForm: React.FC = () => {
       salePrice: number | null;
       isActive: boolean;
     }> = [
-      {
-        regionCode: 'GLOBAL' as const,
-        currency: 'EUR' as const,
-        price: Number(priceGlobal),
-        salePrice: salePriceGlobal ? Number(salePriceGlobal) : null,
-        isActive: true,
-      },
-    ];
+        {
+          regionCode: 'GLOBAL' as const,
+          currency: 'EUR' as const,
+          price: Number(priceGlobal),
+          salePrice: salePriceGlobal ? Number(salePriceGlobal) : null,
+          isActive: true,
+        },
+      ];
 
     if (pricePK && Number(pricePK) > 0) {
       regionalPricesPayload.push({
@@ -743,13 +743,12 @@ export const ProductForm: React.FC = () => {
                         key={size.id}
                         disabled={!size.isActive && !isSelected}
                         onClick={() => toggleSizeSelection(size.name)}
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex items-center gap-1.5 border ${
-                          isSelected
-                            ? 'bg-amber-500 text-black border-amber-500 font-bold shadow-xs'
-                            : size.isActive
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all flex items-center gap-1.5 border ${isSelected
+                          ? 'bg-amber-500 text-black border-amber-500 font-bold shadow-xs'
+                          : size.isActive
                             ? 'bg-surface-subtle text-secondary border-theme hover:border-amber-500/50 hover:text-primary'
                             : 'bg-surface-subtle/40 text-muted/60 border-dashed border-theme cursor-not-allowed line-through'
-                        }`}
+                          }`}
                       >
                         {isSelected && <Check className="w-3.5 h-3.5" />}
                         {size.name}
@@ -810,13 +809,12 @@ export const ProductForm: React.FC = () => {
                         key={col.id}
                         disabled={!col.isActive && !isSelected}
                         onClick={() => toggleColorSelection(col.name)}
-                        className={`p-2.5 rounded-xl text-left transition-all border flex items-center gap-2.5 ${
-                          isSelected
-                            ? 'bg-amber-500/10 border-amber-500 text-primary shadow-xs'
-                            : col.isActive
+                        className={`p-2.5 rounded-xl text-left transition-all border flex items-center gap-2.5 ${isSelected
+                          ? 'bg-amber-500/10 border-amber-500 text-primary shadow-xs'
+                          : col.isActive
                             ? 'bg-surface-subtle text-secondary border-theme hover:border-theme-hover'
                             : 'bg-surface-subtle/40 text-muted/60 border-dashed border-theme cursor-not-allowed opacity-60'
-                        }`}
+                          }`}
                       >
                         <div
                           className="w-5 h-5 rounded-lg border border-theme shadow-xs flex-shrink-0"
@@ -842,7 +840,7 @@ export const ProductForm: React.FC = () => {
             </div>
 
             {/* Section 4: Variant Availability Matrix (inStock Boolean) */}
-            <div className="p-6 rounded-2xl bg-surface border border-theme shadow-xs space-y-4">
+            {/* <div className="p-6 rounded-2xl bg-surface border border-theme shadow-xs space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-theme">
                 <div className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-amber-500" />
@@ -915,8 +913,7 @@ export const ProductForm: React.FC = () => {
                       </select>
                     </div>
 
-                    {/* Simple In-Stock Boolean Toggle */}
-                    <div className="w-full sm:w-36 flex flex-col justify-center">
+                     <div className="w-full sm:w-36 flex flex-col justify-center">
                       <label className="text-[10px] uppercase font-bold text-muted mb-1">Availability</label>
                       <div className="flex items-center gap-2 h-9">
                         <Switch
@@ -946,7 +943,7 @@ export const ProductForm: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             {/* Section 5: Reusable Product Policies */}
             <div className="p-6 rounded-2xl bg-surface border border-theme shadow-xs space-y-4">
@@ -955,7 +952,7 @@ export const ProductForm: React.FC = () => {
                   <ShieldCheck className="w-4 h-4 text-amber-500" />
                   <div>
                     <h2 className="text-sm font-bold font-serif-luxury text-primary uppercase tracking-wide">
-                      5. Reusable Garment Policies
+                      4. Reusable Garment Policies
                     </h2>
                     <p className="text-[11px] text-muted">
                       Attach shipping, returns, warranty, and bespoke care policies displayed on the storefront.
@@ -982,17 +979,16 @@ export const ProductForm: React.FC = () => {
                     return (
                       <label
                         key={pol.id}
-                        className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
-                          isChecked
-                            ? 'bg-amber-500/10 border-amber-500 text-primary'
-                            : 'bg-surface-subtle/50 border-theme hover:border-theme-hover text-secondary'
-                        }`}
+                        className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${isChecked
+                          ? 'bg-amber-500/10 border-amber-500 text-primary'
+                          : 'bg-surface-subtle/50 border-theme hover:border-theme-hover text-secondary'
+                          }`}
                       >
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => togglePolicySelection(pol.id)}
-                          className="mt-0.5 rounded border-theme text-amber-500 focus:ring-amber-500"
+                          className="mt-0.5 rounded border-red-400 text-amber-500 focus:ring-amber-500"
                         />
                         <div className="space-y-0.5 flex-1">
                           <span className="text-xs font-bold block text-primary">{pol.name}</span>
@@ -1010,7 +1006,7 @@ export const ProductForm: React.FC = () => {
               <div className="flex items-center gap-2 pb-3 border-b border-theme">
                 <Info className="w-4 h-4 text-amber-500" />
                 <h2 className="text-sm font-bold font-serif-luxury text-primary uppercase tracking-wide">
-                  6. Editorial Narrative & Specifications
+                  5. Editorial Narrative & Specifications
                 </h2>
               </div>
 
@@ -1366,7 +1362,7 @@ export const ProductForm: React.FC = () => {
 
               <FormField label="Meta Title">
                 <Input
-                  placeholder="e.g. Milanese Double Rider | Atelier Valenti Milano"
+                  placeholder="e.g. Milanese Double Rider | Leather Outerwear"
                   value={seoTitle}
                   onChange={(e) => setSeoTitle(e.target.value)}
                   className="text-xs"

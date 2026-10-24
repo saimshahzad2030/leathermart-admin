@@ -22,6 +22,9 @@ export const Login: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
+  const [logoError, setLogoError] = useState(false);
+  const activeLogo = branding.logoDarkUrl || branding.logoUrl;
+
   const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,24 +82,26 @@ export const Login: React.FC = () => {
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-zinc-950 border border-amber-500/40 flex items-center justify-center mb-4 shadow-md overflow-hidden p-2">
-            {branding.logoDarkUrl || branding.logoUrl ? (
+            {activeLogo && !logoError ? (
               <img
-                src={branding.logoDarkUrl || branding.logoUrl!}
+                src={activeLogo}
                 alt={branding.platformName || 'Platform Logo'}
                 className="w-full h-full object-contain"
-                onError={(e) => {
-                  (e.currentTarget as HTMLElement).style.display = 'none';
-                }}
+                onError={() => setLogoError(true)}
               />
-            ) : (
+            ) : branding.platformShortName ? (
               <span className="font-serif-luxury font-bold text-amber-500 text-2xl">
-                {branding.platformShortName || (branding.platformName ? branding.platformName.trim().slice(0, 2).toUpperCase() : 'AV')}
+                {branding.platformShortName}
               </span>
+            ) : (
+              <Shield className="w-8 h-8 text-amber-500" />
             )}
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold font-serif-luxury text-primary tracking-wide">
-            {(branding.platformName || 'Atelier Valenti Milano').toUpperCase()}
-          </h2>
+          {branding.platformName ? (
+            <h2 className="text-xl sm:text-2xl font-bold font-serif-luxury text-primary tracking-wide">
+              {branding.platformName.toUpperCase()}
+            </h2>
+          ) : null}
           <p className="text-xs text-muted uppercase tracking-widest font-mono mt-1">
             Executive Administration Console
           </p>
@@ -115,7 +120,7 @@ export const Login: React.FC = () => {
           <FormField label="Staff Email" required error={getFieldError(fieldErrors, 'email')}>
             <Input
               type="email"
-              placeholder="admin@ateliervalenti.com"
+              placeholder="admin@example.com"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -153,7 +158,7 @@ export const Login: React.FC = () => {
               isLoading={isLoading}
               leftIcon={<Shield className="w-4 h-4" />}
             >
-              Authorize & Enter Atelier
+              Authorize & Enter Console
             </Button>
           </div>
         </form>

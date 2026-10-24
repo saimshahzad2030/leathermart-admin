@@ -12,7 +12,7 @@ export const ProtectedRoute: React.FC = () => {
       <div className="min-h-screen bg-app flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
         <span className="text-xs text-muted uppercase tracking-widest font-mono">
-          Verifying Atelier Authentication...
+          Verifying Authentication...
         </span>
       </div>
     );

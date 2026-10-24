@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useBranding } from '@/context/BrandingContext';
 import { productsApi } from '@/lib/api/products';
 import { commissionsApi } from '@/lib/api/commissions';
 import { reviewsApi } from '@/lib/api/reviews';
@@ -31,6 +32,7 @@ import {
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { branding } = useBranding();
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -189,15 +191,15 @@ export const Dashboard: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-amber-500 mb-1">
-              <span>Milan Atelier</span>
+              <span>Executive Console</span>
               <span>•</span>
-              <span>Executive Management</span>
+              <span>Platform Operations</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold font-serif-luxury text-primary">
-              Benvenuto, {user?.firstName} {user?.lastName}
+              Welcome, {user?.firstName} {user?.lastName}
             </h1>
             <p className="text-sm text-secondary max-w-2xl leading-relaxed">
-              Real-time operational dashboard for Atelier Valenti Milano outerwear, bespoke made-to-order commissions, and luxury editorial CMS.
+              Real-time operational dashboard for {branding.platformName || 'platform'} merchandise, catalogue, bespoke commissions, and content management.
             </p>
           </div>
 
@@ -401,7 +403,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div>
             <div className="font-semibold text-primary flex items-center gap-2">
-              <span>Atelier Valenti Milano Engine & Supabase PostgreSQL</span>
+              <span>{branding.platformName ? `${branding.platformName} Engine & Database` : 'Core Platform Engine & Database'}</span>
               <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-mono">
                 <CheckCircle2 className="w-3 h-3" /> Healthy
               </span>
