@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useBranding } from '@/context/BrandingContext';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { StatusBadge } from '@/components/common/Badge';
@@ -33,6 +34,7 @@ export const ContactMessageDetailModal: React.FC<ContactMessageDetailModalProps>
   onUpdate,
   isUpdating,
 }) => {
+  const { branding } = useBranding();
   const [status, setStatus] = useState<ContactMessageStatus>('new');
   const [adminNotes, setAdminNotes] = useState('');
 
@@ -50,7 +52,7 @@ export const ContactMessageDetailModal: React.FC<ContactMessageDetailModalProps>
   };
 
   const mailtoUrl = `mailto:${encodeURIComponent(message.email)}?subject=${encodeURIComponent(
-    `Re: ${message.subject} [Atelier Valenti Milano]`
+    branding.platformName ? `Re: ${message.subject} [${branding.platformName}]` : `Re: ${message.subject}`
   )}`;
 
   return (

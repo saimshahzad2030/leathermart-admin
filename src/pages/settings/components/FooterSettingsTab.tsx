@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsApi } from '@/lib/api/settings';
 import { FooterSettings, FooterColumn } from '@/types';
 import { useAuth } from '@/context/AuthContext';
+import { useBranding } from '@/context/BrandingContext';
 import { useToast } from '@/context/ToastContext';
 import { parseApiError, clearFieldError, getFieldError } from '@/lib/apiErrors';
 import { Button } from '@/components/common/Button';
@@ -51,6 +52,7 @@ export const FooterSettingsTab: React.FC<FooterSettingsTabProps> = ({ onDirtyCha
   const toast = useToast();
   const queryClient = useQueryClient();
   const { hasRole } = useAuth();
+  const { branding } = useBranding();
   const canEdit = hasRole(['super_admin', 'store_manager']);
 
   // Fetch footer settings from backend API
@@ -745,7 +747,7 @@ export const FooterSettingsTab: React.FC<FooterSettingsTabProps> = ({ onDirtyCha
           >
             <Input
               disabled={!canEdit}
-              placeholder="© 2026 Atelier Valenti Milano. All rights reserved."
+              placeholder={`© ${new Date().getFullYear()} ${branding.platformName || 'Platform'}. All rights reserved.`}
               value={copyrightText}
               onChange={(e) => {
                 setCopyrightText(e.target.value);
@@ -1163,7 +1165,7 @@ export const FooterSettingsTab: React.FC<FooterSettingsTabProps> = ({ onDirtyCha
               </h3>
             </div>
             <p className="text-xs text-muted mt-0.5">
-              Real-time rendering of your footer as it will appear on the Atelier Valenti Milano public storefront.
+              Real-time rendering of your footer as it will appear on the public storefront.
             </p>
           </div>
 
@@ -1225,7 +1227,7 @@ export const FooterSettingsTab: React.FC<FooterSettingsTabProps> = ({ onDirtyCha
                 {/* Brand Column */}
                 <div className={previewDevice === 'mobile' ? 'space-y-3' : 'lg:col-span-1 space-y-3'}>
                   <div className="font-serif text-lg tracking-[0.2em] font-light uppercase text-[#F7F4EE]">
-                    ATELIER VALENTI
+                    {branding.platformName ? branding.platformName.toUpperCase() : 'STOREFRONT'}
                   </div>
                   <p className="text-[11px] text-white/50 leading-relaxed font-light">
                     Handcrafted European leather outerwear crafted by hand in our Milanese atelier.
@@ -1288,7 +1290,7 @@ export const FooterSettingsTab: React.FC<FooterSettingsTabProps> = ({ onDirtyCha
               <div className="border-t border-white/10 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-white/40">
                 <p>
                   {copyrightText ||
-                    `© ${new Date().getFullYear()} Atelier Valenti Milano. All rights reserved.`}
+                    `© ${new Date().getFullYear()} ${branding.platformName || 'Platform'}. All rights reserved.`}
                 </p>
                 <div className="flex items-center gap-3 tracking-widest uppercase text-white/50 font-mono text-[9px]">
                   {cities.map((city, cIdx) => (

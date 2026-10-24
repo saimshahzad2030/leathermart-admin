@@ -124,7 +124,7 @@ export const SubscribersList: React.FC = () => {
         data={filtered}
         isLoading={isLoading}
         emptyTitle="No subscribers on record"
-        emptyDescription="Clients who join the Atelier Valenti newsletter on the storefront will appear here."
+        emptyDescription="Clients who join the storefront newsletter will appear here."
       />
     </div>
   );

@@ -242,10 +242,10 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
 
   // Active logos for live preview calculation
   const previewFavicon = faviconUrl || '/favicon.ico';
-  const previewTitle = browserTitle.trim() || platformName.trim() || 'Atelier Valenti Milano';
+  const previewTitle = browserTitle.trim() || platformName.trim() || 'Platform Preview';
   const previewShortName =
     platformShortName.trim() ||
-    (platformName.trim() ? platformName.trim().slice(0, 2).toUpperCase() : 'AV');
+    (platformName.trim() ? platformName.trim().slice(0, 2).toUpperCase() : '');
 
   if (isLoading && !baseline) {
     return <FormSettingsSkeleton />;
@@ -350,7 +350,7 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
                 >
                   <Input
                     id="platformName"
-                    placeholder="e.g. Atelier Valenti Milano"
+                    placeholder="e.g. LeatherMart"
                     value={platformName}
                     maxLength={150}
                     onChange={(e) => {
@@ -373,7 +373,7 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
                 >
                   <Input
                     id="platformShortName"
-                    placeholder="e.g. AVM"
+                    placeholder="e.g. LM"
                     value={platformShortName}
                     maxLength={50}
                     onChange={(e) => {
@@ -397,7 +397,7 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
             >
               <Input
                 id="browserTitle"
-                placeholder="e.g. Atelier Valenti Milano — Handcrafted European Leather Outerwear"
+                placeholder="e.g. Platform Name — Handcrafted Leather Goods"
                 value={browserTitle}
                 maxLength={200}
                 onChange={(e) => {
@@ -609,7 +609,7 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
                     <Shield className="w-3 h-3 text-emerald-400 shrink-0" />
                     <span className="text-zinc-500">https://</span>
                     <span className="text-zinc-300">
-                      {platformName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'ateliervalenti'}.com
+                      {platformName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'platform'}.com
                     </span>
                   </div>
                 </div>
@@ -632,21 +632,25 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
                             alt="Logo preview"
                             className="h-6 w-auto max-w-[100px] object-contain shrink-0"
                           />
-                        ) : (
+                        ) : previewShortName ? (
                           <div className="w-6 h-6 rounded-md bg-zinc-900 border border-amber-500/30 flex items-center justify-center shrink-0">
                             <span className="font-serif-luxury font-bold text-amber-500 text-[10px]">
                               {previewShortName}
                             </span>
                           </div>
+                        ) : (
+                          <div className="w-6 h-6 rounded-md bg-zinc-900 border border-amber-500/30 flex items-center justify-center shrink-0">
+                            <Shield className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
                         )}
                         <span className="font-serif-luxury font-bold text-xs tracking-wider text-zinc-100 truncate">
-                          {platformName || 'ATELIER VALENTI MILANO'}
+                          {platformName || 'PLATFORM NAME'}
                         </span>
                       </div>
                     </div>
 
                     <div className="hidden sm:flex items-center gap-2 text-[10px] text-zinc-400 tracking-widest font-mono shrink-0">
-                      <span className="hover:text-amber-400 cursor-pointer">OUTERWEAR</span>
+                      <span className="hover:text-amber-400 cursor-pointer">CATALOGUE</span>
                       <span className="hover:text-amber-400 cursor-pointer">BESPOKE</span>
                     </div>
 
@@ -657,8 +661,7 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
                   </div>
 
                   <p className="text-[11px] text-zinc-500 italic px-2">
-                    {metaDescription ||
-                      'Luxury Italian calfskin and lambskin outerwear crafted by hand in our Milanese atelier.'}
+                    {metaDescription || ''}
                   </p>
                 </div>
               </div>
@@ -683,16 +686,20 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
                         alt="Dark logo preview"
                         className="max-h-full max-w-full object-contain"
                       />
-                    ) : (
+                    ) : previewShortName ? (
                       <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-amber-500/40 flex items-center justify-center">
                         <span className="font-serif-luxury font-bold text-amber-500 text-base">
                           {previewShortName}
                         </span>
                       </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-amber-500/40 flex items-center justify-center">
+                        <Shield className="w-5 h-5 text-amber-500" />
+                      </div>
                     )}
                   </div>
                   <span className="text-xs font-serif-luxury font-bold text-zinc-200 tracking-wider">
-                    {platformName || 'ATELIER VALENTI'}
+                    {platformName || 'PLATFORM NAME'}
                   </span>
                 </div>
 
@@ -708,16 +715,20 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
                         alt="Light logo preview"
                         className="max-h-full max-w-full object-contain"
                       />
-                    ) : (
+                    ) : previewShortName ? (
                       <div className="w-10 h-10 rounded-xl bg-zinc-200 border border-zinc-400 flex items-center justify-center">
                         <span className="font-serif-luxury font-bold text-zinc-800 text-base">
                           {previewShortName}
                         </span>
                       </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-zinc-200 border border-zinc-400 flex items-center justify-center">
+                        <Shield className="w-5 h-5 text-zinc-700" />
+                      </div>
                     )}
                   </div>
                   <span className="text-xs font-serif-luxury font-bold text-zinc-900 tracking-wider">
-                    {platformName || 'ATELIER VALENTI'}
+                    {platformName || 'PLATFORM NAME'}
                   </span>
                 </div>
               </div>
