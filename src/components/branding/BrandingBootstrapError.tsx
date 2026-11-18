@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/common/Button';
+import { FRIENDLY_NETWORK_ERROR } from '@/lib/apiErrors';
 
 interface BrandingBootstrapErrorProps {
   onRetry: () => void;
@@ -27,7 +28,7 @@ export const BrandingBootstrapError: React.FC<BrandingBootstrapErrorProps> = ({ 
         </h2>
 
         <p className="text-xs text-muted leading-relaxed mb-6">
-          Unable to establish a secure connection to load the platform branding configuration. Please verify your network connection and backend service availability.
+          {FRIENDLY_NETWORK_ERROR}
         </p>
 
         <Button
@@ -37,7 +38,7 @@ export const BrandingBootstrapError: React.FC<BrandingBootstrapErrorProps> = ({ 
           onClick={onRetry}
           leftIcon={<RotateCcw className="w-4 h-4" />}
         >
-          Retry Connection
+          Try Again
         </Button>
       </div>
     </div>

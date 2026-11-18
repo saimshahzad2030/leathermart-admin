@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ApiResponse } from '@/types';
+import { FRIENDLY_NETWORK_ERROR } from '@/lib/apiErrors';
 
 const rawApiUrl = (import.meta.env.VITE_API_URL || import.meta.env.API_URL || '').trim();
 const rawRefreshUrl = (import.meta.env.VITE_API_REFRESH_URL || import.meta.env.API_REFRESH_URL || '').trim();
@@ -121,6 +122,21 @@ apiClient.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    }
+
+    // Keep detailed technical logs in console for developer debugging
+    console.error('[Axios Network/API Error Details]:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      code: error.code,
+      message: error.message,
+    });
+
+    // If server is unreachable or request failed at network level, set friendly error message
+    if (!error.response) {
+      error.message = FRIENDLY_NETWORK_ERROR;
     }
 
     return Promise.reject(error);

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
+import { FRIENDLY_NETWORK_ERROR, isTechnicalError } from '@/lib/apiErrors';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -24,8 +25,12 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const addToast = useCallback((type: ToastType, message: string, title?: string) => {
+    // Sanitize technical network/server errors so administrators never see raw exceptions
+    const displayMessage =
+      type === 'error' && isTechnicalError(message) ? FRIENDLY_NETWORK_ERROR : message;
+
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, type, message, title }]);
+    setToasts((prev) => [...prev, { id, type, message: displayMessage, title }]);
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));

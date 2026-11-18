@@ -5,6 +5,7 @@ import { useToast } from '@/context/ToastContext';
 import { Button } from '@/components/common/Button';
 import { Input } from './Input';
 import { cn } from '@/lib/utils';
+import { parseApiError } from '@/lib/apiErrors';
 
 export interface ImageUploaderProps {
   value?: string | null;
@@ -74,8 +75,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       setImageError(false);
       toast.success('Asset uploaded successfully to storage.');
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || err.message || 'Failed to upload asset.';
-      toast.error(errMsg);
+      toast.error(parseApiError(err, 'Failed to upload asset.').message);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

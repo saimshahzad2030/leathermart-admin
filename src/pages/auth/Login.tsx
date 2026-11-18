@@ -51,7 +51,7 @@ export const Login: React.FC = () => {
       toast.success('Authenticated successfully. Welcome back.');
       navigate(from, { replace: true });
     } catch (err: any) {
-      const parsed = parseApiError(err, 'Authentication failed. Please check backend connectivity.');
+      const parsed = parseApiError(err, 'Something went wrong. Please try again in a few seconds.');
       if (parsed.errorCode === 'ERR_INVALID_CREDENTIALS') {
         setErrorMessage('Invalid credentials. Please verify your email and password.');
       } else if (parsed.errorCode === 'ERR_ACCOUNT_DEACTIVATED') {
