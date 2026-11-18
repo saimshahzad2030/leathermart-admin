@@ -454,14 +454,90 @@ export interface SiteSetting {
   searchKeywords: string[];
 }
 
-export interface MegaMenuPayload {
-  categories: Array<{ name: string; href: string; tag?: string }>;
-  featuredCard?: {
-    title: string;
-    image: string;
-    href: string;
-  };
+export interface NavigationItem {
+  id: string;
+  labelKey: string;
+  fallbackLabel: string;
+  href: string;
+  badge?: string;
+  type?: 'CUSTOM_LINK' | 'CATEGORY' | 'PRODUCT';
+  categoryId?: string | null;
+  productId?: string | null;
+  isActive?: boolean;
+  isDraft?: boolean;
+  legacyId?: string | null;
 }
+
+export interface NavigationFeatured {
+  title: string;
+  description: string;
+  imageUrl: string;
+  ctaTextKey: string;
+  fallbackCta: string;
+  href: string;
+  tag: string;
+  badge?: string;
+  isActive?: boolean;
+  isDraft?: boolean;
+  sortOrder?: number;
+}
+
+export interface DepartmentNavData {
+  id: string;
+  labelKey: string;
+  fallbackLabel: string;
+  href: string;
+  categories: NavigationItem[];
+  styles?: NavigationItem[];
+  coats?: NavigationItem[];
+  shopBy: NavigationItem[];
+  featured: NavigationFeatured;
+  [key: string]: any;
+}
+
+export interface NavigationSectionCMS {
+  id: string;
+  menuId: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  isDraft: boolean;
+  items: NavigationItem[];
+}
+
+export interface NavigationFeatureCMS {
+  id: string;
+  menuId: string;
+  title: string;
+  description?: string | null;
+  imageUrl: string;
+  ctaText?: string | null;
+  ctaTextKey?: string | null;
+  ctaUrl: string;
+  badge?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  isDraft: boolean;
+}
+
+export interface NavigationMenuCMS {
+  id: string;
+  name: string;
+  department: string;
+  slug: string;
+  menuKey?: string;
+  description?: string | null;
+  isActive: boolean;
+  isDraft: boolean;
+  sortOrder: number;
+  payload?: any;
+  sections?: NavigationSectionCMS[];
+  features?: NavigationFeatureCMS[];
+}
+
+export type MegaMenuPayload = DepartmentNavData;
 
 // System Health
 export interface SystemHealth {

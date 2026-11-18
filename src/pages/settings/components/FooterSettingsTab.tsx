@@ -592,7 +592,7 @@ export const FooterSettingsTab: React.FC<FooterSettingsTabProps> = ({ onDirtyCha
           <AlertCircle className="w-6 h-6 shrink-0" />
           <div>
             <h3 className="font-semibold text-sm">Failed to load footer settings</h3>
-            <p className="text-xs text-muted mt-0.5">{(loadError as any)?.message || 'Network or server error'}</p>
+            <p className="text-xs text-muted mt-0.5">{parseApiError(loadError).message}</p>
           </div>
         </div>
         <Button variant="secondary" size="sm" onClick={() => refetch()}>

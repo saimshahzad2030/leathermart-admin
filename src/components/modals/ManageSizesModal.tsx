@@ -95,8 +95,8 @@ export const ManageSizesModal: React.FC<ManageSizesModalProps> = ({
       invalidateQueries();
     },
     onError: (err: any) => {
-      const msg = err.response?.data?.message || err.message || 'Failed to toggle status';
-      toast.error( msg);
+      const parsed = parseApiError(err, 'Failed to toggle status');
+      toast.error(parsed.message);
     },
   });
 
@@ -114,8 +114,8 @@ export const ManageSizesModal: React.FC<ManageSizesModalProps> = ({
             'Cannot delete size because it is currently assigned to products. Please unassign this size from all products first, or deactivate it instead.'
         );
       } else {
-        const msg = err.response?.data?.message || err.message || 'Failed to delete size';
-        toast.error(msg);
+        const parsed = parseApiError(err, 'Failed to delete size');
+        toast.error(parsed.message);
       }
       setDeleteTarget(null);
     },

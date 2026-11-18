@@ -257,7 +257,7 @@ export const PlatformBrandingTab: React.FC<PlatformBrandingTabProps> = ({ onDirt
         <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
         <h3 className="text-base font-bold text-primary">Failed to load platform branding</h3>
         <p className="text-xs text-muted max-w-md mx-auto">
-          Could not communicate with the branding settings API. Please verify backend connectivity.
+          {parseApiError(loadError).message}
         </p>
         <Button variant="outline" size="sm" onClick={() => refetch()} leftIcon={<RotateCcw className="w-4 h-4" />}>
           Retry

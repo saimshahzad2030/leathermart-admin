@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   LucideIcon,
   Inbox,
+  Compass,
 } from 'lucide-react';
 
 interface NavItem {
@@ -87,6 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'Content & CMS',
       items: [
+        { label: 'Navigation Management', href: '/navigation', icon: Compass },
         { label: 'Homepage Sections', href: '/cms', icon: Sparkles },
         { label: 'Client Testimonials', href: '/testimonials', icon: MessageSquareQuote },
         { label: 'Social Looks', href: '/social-looks', icon: Camera },

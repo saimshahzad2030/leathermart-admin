@@ -95,8 +95,8 @@ export const ManageColorsModal: React.FC<ManageColorsModalProps> = ({
       invalidateQueries();
     },
     onError: (err: any) => {
-      const msg = err.response?.data?.message || err.message || 'Failed to toggle status';
-      toast.error(msg);
+      const parsed = parseApiError(err, 'Failed to toggle status');
+      toast.error(parsed.message);
     },
   });
 
@@ -114,8 +114,8 @@ export const ManageColorsModal: React.FC<ManageColorsModalProps> = ({
             'Cannot delete color because it is currently assigned to products. Please unassign this color from all products first, or deactivate it instead.'
         );
       } else {
-        const msg = err.response?.data?.message || err.message || 'Failed to delete color';
-        toast.error(msg);
+        const parsed = parseApiError(err, 'Failed to delete color');
+        toast.error(parsed.message);
       }
       setDeleteTarget(null);
     },

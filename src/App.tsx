@@ -25,6 +25,7 @@ import { TestimonialsList } from '@/pages/cms/TestimonialsList';
 import { SocialLooksList } from '@/pages/cms/SocialLooksList';
 import { SubscribersList } from '@/pages/subscribers/SubscribersList';
 import { MediaLibrary } from '@/pages/media/MediaLibrary';
+import { NavigationManagement } from '@/pages/navigation/NavigationManagement';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { UsersList } from '@/pages/users/UsersList';
 import { ProfilePage } from '@/pages/profile/ProfilePage';
@@ -58,6 +59,7 @@ export const App: React.FC = () => {
                     <Route path="/social-looks" element={<SocialLooksList />} />
                     <Route path="/subscribers" element={<SubscribersList />} />
                     <Route path="/media" element={<MediaLibrary />} />
+                    <Route path="/navigation" element={<NavigationManagement />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
 

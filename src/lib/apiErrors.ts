@@ -1,5 +1,35 @@
 import axios from 'axios';
 
+export const FRIENDLY_NETWORK_ERROR = 'Something went wrong. Please try again in a few seconds.';
+
+/**
+ * Checks if an error message contains technical details that shouldn't be exposed to administrators.
+ */
+export function isTechnicalError(msg?: string | null): boolean {
+  if (!msg || typeof msg !== 'string') return false;
+  const lower = msg.toLowerCase();
+  return (
+    lower.includes('network error') ||
+    lower.includes('unable to reach server') ||
+    lower.includes('failed to fetch') ||
+    lower.includes('load failed') ||
+    lower.includes('econnrefused') ||
+    lower.includes('etimedout') ||
+    lower.includes('enotfound') ||
+    lower.includes('econnaborted') ||
+    lower.includes('err_network') ||
+    lower.includes('err_connection') ||
+    lower.includes('check your connection') ||
+    lower.includes('backend connectivity') ||
+    lower.includes('internal server error') ||
+    lower.includes('prismaclient') ||
+    lower.includes('database service is currently unreachable') ||
+    lower.includes('can\'t reach database server') ||
+    lower.includes('socket hang up') ||
+    lower.includes('service unavailable')
+  );
+}
+
 export interface ParsedApiError {
   /** The primary human-readable message */
   message: string;
@@ -45,9 +75,16 @@ function normalizeErrorMessages(val: unknown): string[] {
 
 /**
  * Parses any error into a structured ParsedApiError object.
- * Safely extracts backend validation errors, HTTP codes, and field-level mappings.
+ * Safely extracts backend validation errors, HTTP codes, and field-level mappings,
+ * while preventing technical network or internal server errors from leaking to administrators.
  */
-export function parseApiError(error: unknown, fallbackMessage: string = 'An unexpected error occurred.'): ParsedApiError {
+export function parseApiError(
+  error: unknown,
+  fallbackMessage: string = FRIENDLY_NETWORK_ERROR
+): ParsedApiError {
+  // Keep detailed technical logs in the developer console for debugging
+  console.error('[API Error Debug Details]:', error);
+
   // Default values
   let message = fallbackMessage;
   let errorCode: string | undefined;
@@ -59,18 +96,13 @@ export function parseApiError(error: unknown, fallbackMessage: string = 'An unex
     statusCode = error.response?.status;
     const responseData = error.response?.data;
 
-    // Check HTTP status for network/server fallback
+    // Check HTTP status for network/server unreachable failure (no response received)
     if (!error.response) {
-      if (error.code === 'ECONNABORTED') {
-        message = 'Request timed out. Please check your connection and try again.';
-      } else {
-        message = 'Network error. Unable to reach server. Please check your connection.';
-      }
       return {
-        message,
+        message: FRIENDLY_NETWORK_ERROR,
         statusCode: 0,
         fieldErrors: {},
-        generalErrors: [message],
+        generalErrors: [FRIENDLY_NETWORK_ERROR],
         hasFieldErrors: false,
         isValidationError: false,
       };
@@ -79,7 +111,13 @@ export function parseApiError(error: unknown, fallbackMessage: string = 'An unex
     if (responseData && typeof responseData === 'object') {
       // Extract top-level message
       if (typeof responseData.message === 'string' && responseData.message.trim().length > 0) {
-        message = responseData.message.trim();
+        const rawMsg = responseData.message.trim();
+        // If the server returned a technical message on a 5xx error or internal crash, sanitize it
+        if ((statusCode && statusCode >= 500) || isTechnicalError(rawMsg)) {
+          message = FRIENDLY_NETWORK_ERROR;
+        } else {
+          message = rawMsg;
+        }
       }
 
       // Extract error code
@@ -153,7 +191,8 @@ export function parseApiError(error: unknown, fallbackMessage: string = 'An unex
         }
       }
     } else if (typeof responseData === 'string' && responseData.trim().length > 0) {
-      message = responseData.trim();
+      const rawString = responseData.trim();
+      message = isTechnicalError(rawString) ? FRIENDLY_NETWORK_ERROR : rawString;
     } else {
       // Sensible status fallbacks
       if (statusCode === 401) {
@@ -167,13 +206,14 @@ export function parseApiError(error: unknown, fallbackMessage: string = 'An unex
       } else if (statusCode === 429) {
         message = 'Rate limit exceeded. Please wait a few moments before retrying.';
       } else if (statusCode && statusCode >= 500) {
-        message = 'Server encountered an unexpected error. Please try again later.';
+        message = FRIENDLY_NETWORK_ERROR;
       }
     }
   } else if (error instanceof Error) {
-    message = error.message || fallbackMessage;
+    const rawErrorMsg = error.message || fallbackMessage;
+    message = isTechnicalError(rawErrorMsg) ? FRIENDLY_NETWORK_ERROR : rawErrorMsg;
   } else if (typeof error === 'string') {
-    message = error;
+    message = isTechnicalError(error) ? FRIENDLY_NETWORK_ERROR : error;
   }
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
@@ -182,6 +222,11 @@ export function parseApiError(error: unknown, fallbackMessage: string = 'An unex
     errorCode === 'ERR_VALIDATION_FAILED' ||
     (statusCode === 400 && hasFieldErrors) ||
     hasFieldErrors;
+
+  // Final check: if message contains technical details, replace with friendly message
+  if (!isValidationError && isTechnicalError(message)) {
+    message = FRIENDLY_NETWORK_ERROR;
+  }
 
   return {
     message,

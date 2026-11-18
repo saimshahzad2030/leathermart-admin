@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/context/ToastContext';
+import { parseApiError } from '@/lib/apiErrors';
 
 export interface RefreshButtonProps {
   onRefresh: () => Promise<any> | void;
@@ -40,7 +41,7 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
         await result;
       }
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || 'Failed to refresh data.');
+      toast.error(parseApiError(err, 'Failed to refresh data.').message);
     } finally {
       setInternalLoading(false);
     }
